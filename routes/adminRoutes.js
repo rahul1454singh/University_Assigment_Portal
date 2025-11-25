@@ -20,7 +20,8 @@ router.get("/admin/dashboard", verifyAdmin, async (req, res) => {
       totalHODs,
       totalAdmins,
       adminName
-    });
+    });       
+    
   } catch (err) {
     res.send("Error loading dashboard");
   }
