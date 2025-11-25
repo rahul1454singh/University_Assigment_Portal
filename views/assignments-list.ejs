@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Your Assignments</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#222;padding:28px}
+    .wrap{max-width:940px;margin:0 auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.04)}
+    h1{margin:0 0 16px}
+    .top-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .btn{padding:8px 12px;border-radius:8px;text-decoration:none;color:#fff;font-weight:700}
+    .btn-back{background:#555}
+    .btn-upload{background:#3551a1}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    thead th{font-weight:700;padding:12px 10px;background:#fafbfd;text-align:left;border-bottom:1px solid #eee}
+    tbody td{padding:12px 10px;border-bottom:1px solid #f1f3f6}
+    .status{display:inline-block;padding:6px 10px;border-radius:18px;font-weight:700;font-size:13px}
+    .s-approved{background:#e9f7ee;color:#177a3b}
+    .s-rejected{background:#fff0f0;color:#b22222}
+    .s-draft{background:#eef2ff;color:#2b3ea8}
+    .s-submitted{background:#f0fbf6;color:#1f7a5a}
+    a.file-link{color:#3551a1;font-weight:700;text-decoration:none}
+    .empty{padding:28px;text-align:center;color:#666}
+    @media (max-width:700px){ .top-actions{flex-direction:column;gap:8px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-actions">
+      <h1>Your Assignments</h1>
+      <div>
+        <a href="/student/dashboard" class="btn btn-back">Back to Dashboard</a>
+      
+      </div>
+    </div>
+
+    <% if (!assignments || assignments.length === 0) { %>
+      <div class="empty">No assignments found. Upload your first assignment.</div>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:48%">Title</th>
+            <th style="width:14%">Category</th>
+            <th style="width:14%">Status</th>
+            <th style="width:12%">File</th>
+            <th style="width:12%">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% assignments.forEach(a => { %>
+            <tr>
+              <td><%= a.title %></td>
+              <td><%= a.category || '-' %></td>
+              <td>
+                <% if (a.status === 'Approved') { %>
+                  <span class="status s-approved">Approved</span>
+                <% } else if (a.status === 'Rejected') { %>
+                  <span class="status s-rejected">Rejected</span>
+                <% } else if (a.status === 'Draft') { %>
+                  <span class="status s-draft">Draft</span>
+                <% } else { %>
+                  <span class="status s-submitted"><%= a.status %></span>
+                <% } %>
+              </td>
+              <td>
+                <% if (a.file && a.file.path) { %>
+                  <a class="file-link" href="<%= a.file.path %>" target="_blank" rel="noopener">View PDF</a>
+                <% } else { %>
+                  -
+                <% } %>
+              </td>
+              <td><%= new Date(a.createdAt).toLocaleString() %></td>
+              <td></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+</body>
+</html>

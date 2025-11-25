@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Departments — Simplified</title>
+  <style>
+    :root{--blue:#4b6cb7;--bg:#f3f5f9}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:#111}
+    .nav{background:var(--blue);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
+    .container{max-width:980px;margin:18px auto;background:#fff;border-radius:10px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    h1{text-align:center;margin:0 0 12px}
+
+    .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .controls .left{flex:1}
+    .controls input, .controls select{padding:8px;border-radius:8px;border:1px solid #ccc}
+
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:10px;border:1px solid #e6eefc;text-align:left;font-size:14px}
+    th{background:var(--blue);color:#fff}
+    tbody tr:nth-child(even){background:#f8fbff}
+
+    /* unified button style for anchors and buttons */
+    .btn{
+      display:inline-block;
+      padding:8px 10px;
+      border-radius:6px;
+      font-weight:700;
+      border:none;
+      cursor:pointer;
+      text-decoration:none;   /* remove underline for anchors */
+      color: #fff;
+      font-size:13px;
+      line-height:1;
+    }
+
+    /* edit keeps its yellow color but follows same block look as delete */
+    .edit{ background:#ffc107; color:#111; }
+    .edit:hover{ filter:brightness(.95); }
+
+    /* delete uses red */
+    .del{ background:#dc3545; }
+    .del:hover{ filter:brightness(.95); }
+
+    .pagination{display:flex;justify-content:center;gap:10px;margin-top:12px}
+    .pagination button{padding:6px 10px;border-radius:6px;border:none;background:var(--blue);color:#fff}
+    .pagination button:disabled{background:#a0a0a0}
+
+    /* modal */
+    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center}
+    .modal{background:#fff;padding:18px;border-radius:10px;max-width:420px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+    .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+    .btn.secondary{background:#6c757d}
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div>Departments List</div>
+    <div>
+      <a href="/admin/dashboard" style="color:#fff;text-decoration:none;margin-right:12px">Dashboard</a>
+      <a href="/admin/departments/create" style="color:#fff;text-decoration:none">Creat Departments </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div style="color:#c00;font-weight:700;text-align:center;margin-bottom:10px"><%= error %></div>
+    <% } %>
+
+    <div class="controls">
+      <div class="left">
+        <input id="searchInput" type="search" placeholder="Search by name" value="<%= typeof q !== 'undefined' ? q : '' %>" style="width:100%" />
+      </div>
+
+      <form id="filterForm" method="GET" action="/admin/departments" style="margin:0">
+        <input type="hidden" name="q" id="hiddenQ" value="<%= typeof q !== 'undefined' ? q : '' %>">
+        <select name="type" id="typeFilter" onchange="document.getElementById('filterForm').submit()">
+          <option value="" <%= (typeof type === 'undefined' || type === '') ? 'selected' : '' %>>All Types</option>
+          <option value="UG" <%= type === 'UG' ? 'selected' : '' %>>UG</option>
+          <option value="PG" <%= type === 'PG' ? 'selected' : '' %>>PG</option>
+          <option value="Research" <%= type === 'Research' ? 'selected' : '' %>>Research</option>
+        </select>
+      </form>
+    </div>
+
+    <table id="table">
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Type</th>
+          <th>Address</th>
+          <th>Users</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% departments.forEach(dep => { %>
+          <tr data-id="<%= dep._id %>">
+            <td class="name"><%= dep.name %></td>
+            <td><%= dep.type %></td>
+            <td><%= dep.address %></td>
+            <td class="count"><%= dep.userCount %></td>
+            <td>
+              <!-- edit is an anchor but styled exactly like delete (no underline, same block look) -->
+              <a class="btn edit" href="/admin/departments/edit/<%= dep._id %>">Edit</a>
+              <button class="btn del js-delete" data-id="<%= dep._id %>" data-name="<%= dep.name %>">Delete</button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+
+    <!-- pegination -->
+    <div class="pagination">
+      <button id="prev">Prev</button>
+      <div id="pageInfo">Page <span id="page">1</span> of <span id="pages">1</span></div>
+      <button id="next">Next</button>
+    </div>
+  </main>
+
+  <div id="backdrop" class="backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3 id="modalTitle">Delete department</h3>
+      <p id="modalText">Are you sure?</p>
+      <div class="actions">
+        <button id="cancel" class="btn secondary">Cancel</button>
+        <button id="confirm" class="btn del">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple client search + pagination
+    const rowsPerPage = 10;
+    const tbody = document.querySelector('#table tbody');
+    let allRows = Array.from(tbody.querySelectorAll('tr'));
+    let filtered = allRows.slice();
+    let page = 1;
+
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const pageEl = document.getElementById('page');
+    const pagesEl = document.getElementById('pages');
+
+    function render() {
+      const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+      page = Math.min(page, totalPages);
+      const start = (page - 1) * rowsPerPage;
+      filtered.forEach((r, i) => r.style.display = (i >= start && i < start + rowsPerPage) ? '' : 'none');
+      pageEl.textContent = page;
+      pagesEl.textContent = totalPages;
+      prev.disabled = page === 1;
+      next.disabled = page === totalPages;
+    }
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      filtered = allRows.filter(r => (r.querySelector('.name').innerText.toLowerCase().includes(q)));
+      page = 1; render();
+      // keep hidden input in sync for server-side filter submissions
+      document.getElementById('hiddenQ').value = e.target.value;
+    });
+
+    prev.addEventListener('click', () => { if (page > 1) { page--; render(); } });
+    next.addEventListener('click', () => { page++; render(); });
+
+    // Delete modal + fetch
+    const backdrop = document.getElementById('backdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalText = document.getElementById('modalText');
+    const cancel = document.getElementById('cancel');
+    const confirm = document.getElementById('confirm');
+    let toDelete = null;
+
+    function attachDeletes(){
+      document.querySelectorAll('.js-delete').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.id; const name = btn.dataset.name;
+          toDelete = { id, row: btn.closest('tr') };
+          modalTitle.textContent = `Delete "${name}"?`;
+          modalText.textContent = `Delete department "${name}" — this cannot be undone.`;
+          backdrop.style.display = 'flex';
+          confirm.focus();
+        };
+      });
+    }
+
+    cancel.onclick = () => { backdrop.style.display = 'none'; toDelete = null; };
+
+    confirm.onclick = async () => {
+      if (!toDelete) return; confirm.disabled = true; confirm.textContent = 'Deleting...';
+      try {
+        const res = await fetch(`/admin/departments/${toDelete.id}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (!res.ok) { alert(json.message || 'Delete failed'); return; }
+        toDelete.row.remove();
+        allRows = Array.from(tbody.querySelectorAll('tr'));
+        filtered = allRows.slice();
+        const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+        if (page > totalPages) page = totalPages;
+        render();
+      } catch (err) { console.error(err); alert('Network/server error'); }
+      finally { confirm.disabled = false; confirm.textContent = 'Delete'; backdrop.style.display = 'none'; toDelete = null; }
+    };
+
+    attachDeletes(); render();
+  </script>
+</body>
+</html>

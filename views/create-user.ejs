@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create User — Simplified</title>
+  <style>
+    :root{--blue:#4b6cb7;--bg:#f3f5f9;--card:#fff}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family:Segoe UI,Arial,sans-serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      padding:14px;
+    }
+
+    .box{
+      width:100%;
+      max-width:380px;
+      background:var(--card);
+      padding:26px;
+      border-radius:12px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    h2{
+      text-align:center;
+      margin:0 0 16px;
+      font-weight:800;
+      font-size:22px;
+      color:#222;
+    }
+
+    input,select{
+      width:100%;
+      padding:12px;
+      margin:8px 0;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:15px;
+    }
+    input:focus,select:focus{
+      border-color:var(--blue);
+      outline:none;
+      box-shadow:0 0 0 3px rgba(75,108,183,0.15);
+    }
+
+    .btn{
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:8px;
+      background:var(--blue);
+      color:#fff;
+      font-weight:800;
+      cursor:pointer;
+      margin-top:12px;
+      font-size:15px;
+    }
+    .btn:hover{background:#3551a1}
+
+    .back{
+      display:block;
+      margin-top:10px;
+      padding:10px;
+      background:#555;
+      color:#fff;
+      text-align:center;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:700;
+    }
+    .back:hover{background:#333}
+
+    .msg{
+      padding:10px;
+      border-radius:8px;
+      font-weight:700;
+      text-align:center;
+      margin-top:12px;
+      font-size:14px;
+    }
+    .ok{background:#d4edda;color:#155724}
+    .err{background:#f8d7da;color:#721c24}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Create User</h2>
+
+    <form action="/admin/users/create" method="POST">
+      <input type="text" name="name" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password (optional)">
+
+      <select name="department" required>
+        <option value="">Select Department</option>
+        <% departments.forEach(d => { %>
+          <option value="<%= d._id %>"><%= d.name %></option>
+        <% }) %>
+      </select>
+
+      <select name="role" required>
+        <option value="">Select Role</option>
+        <option value="Student">Student</option>
+        <option value="Professor">Professor</option>
+        <option value="HOD">HOD</option>
+      </select>
+
+      <button class="btn" type="submit">Create User</button>
+    </form>
+
+    <a class="back" href="/admin/users">Back to Users</a>
+
+    <% if(success){ %>
+      <div class="msg ok"><%= success %></div>
+    <% } %>
+    <% if(error){ %>
+      <div class="msg err"><%= error %></div>
+    <% } %>
+  </div>
+</body>
+</html>

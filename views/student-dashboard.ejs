@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      --blue: #4b6cb7;
+      --bg: #f3f5f9;
+      --card: #fff;
+      --accent: #4b6cb7;
+      --topbar-height: 64px;
+      --left-column-width: 72px;
+      --modal-overlay: rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { font-family: "Segoe UI", sans-serif; background: var(--bg); color:#222; min-height:100vh; padding-bottom:80px; }
+
+    /* topbar + menu */
+    .topbar {
+      background: var(--blue);
+      color: #fff;
+      height: var(--topbar-height);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 18px;
+      gap:12px;
+      position:fixed;
+      left:0; right:0; top:0;
+      z-index:1000;
+    }
+    .menu-btn { position: fixed; top: 10px; left: 12px; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:8px; transition: background .15s; z-index:1200; background: transparent; border: none; padding:0; }
+    .menu-btn:hover { background: rgba(255,255,255,0.06); }
+    .menu-btn .bars { display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center; pointer-events: none; }
+    .menu-btn .bars span { display:block; width:20px; height:2.6px; background:white; border-radius:2px; transition: transform .18s, opacity .12s; }
+    .menu-btn.open .bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .menu-btn.open .bars span:nth-child(2) { opacity: 0; }
+    .menu-btn.open .bars span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .topbar .title { position: absolute; left: 50%; transform: translateX(-50%); font-weight:800; font-size:20px; letter-spacing:0.2px; text-align:center; pointer-events: none; color: #fff; }
+    .topbar .right { position: fixed; right: 18px; top: 12px; display:flex; align-items:center; gap:14px; z-index:1200; }
+    .hello { font-size:15px; color:#fff; white-space:nowrap; }
+    .hello .name { color:#dcecff; font-weight:700; margin-left:6px; }
+    .logout-btn { background: var(--blue); color:#fff; border:none; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; text-decoration:none; }
+    .logout-btn:hover { background:#3a56a0; }
+
+    .left-space { position:fixed; left:0; top:var(--topbar-height); bottom:0; width:var(--left-column-width); display:flex; align-items:flex-start; justify-content:center; padding-top:18px; z-index:20; pointer-events:none; }
+
+    /* main content */
+    .content { margin-top: calc(var(--topbar-height) + 20px); margin-left: var(--left-column-width); padding: 18px; max-width: 1400px; margin-right: auto; margin-bottom: 40px; transition: filter .25s ease, opacity .25s ease; }
+    body.sidebar-open .content { filter: blur(3px); opacity: 0.35; pointer-events: none; }
+    body.sidebar-open::before { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.18); z-index: 1100; }
+
+    .wrap { background:white; border-radius:10px; padding:18px; box-shadow:0 8px 18px rgba(0,0,0,0.04); }
+    h1 { margin:0 0 18px; font-size:22px; }
+
+    .cards { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+    .card { padding:18px; border-radius:10px; min-width:160px; flex:1 1 180px; box-shadow:0 3px 10px rgba(0,0,0,0.05); }
+    .card h3 { margin:0 0 8px; font-size:13px; color:#666; }
+    .card p { margin:0; font-size:22px; font-weight:800; color:#111; }
+    .card.draft { background: #eef1ff; }
+    .card.submitted { background: #e9fdf4; }
+    .card.approved { background: #fdfde7; }
+    .card.rejected { background: #ffecec; }
+
+    .actions { display:flex; justify-content:flex-end; gap:10px; margin-bottom:12px; }
+    .btn { padding:8px 12px; background:var(--blue); color:#fff; border-radius:8px; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:8px; border: none; outline: none; box-shadow: none; cursor: pointer; }
+    .btn:hover { filter: brightness(0.96); }
+    .btn:focus { outline: none; box-shadow: none; }
+    .btn.secondary { background:#555; }
+
+    /* Recent submissions list */
+    .recent { background: var(--card); padding:12px; border-radius:8px; box-shadow:0 3px 10px rgba(0,0,0,0.05); overflow-x:auto; }
+    /* Use fixed table layout so columns keep equal spacing */
+    .recent table { width:100%; border-collapse:collapse; table-layout: fixed; min-width:520px; }
+    /* make three columns: title (flexible), status (narrow), date (narrow) */
+    .recent thead th { text-align:left; font-size:14px; padding:12px; color:#333; font-weight:700; }
+    .recent th.title { width:60%; }
+    .recent th.status, .recent th.date { width:20%; text-align:left; }
+    .recent tbody td { padding:12px; border-bottom:1px solid #eee; font-size:14px; vertical-align:middle; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .recent tbody tr td.title-col { padding-right:6px; }
+    .recent tbody tr td.status-col { text-align:left; }
+    .recent tbody tr td.date-col { text-align:left; color:#333; opacity:0.9; }
+
+    .status-approved { color:#2f9e44; font-weight:700; background:#e9f7ee; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
+    .status-rejected { color:#c92a2a; font-weight:700; background:#fdecea; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
+    .status-submitted { color:#f08a24; font-weight:700; background:#fff7e6; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
+    .status-draft { color:#5065d6; background:#eef2ff; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
+
+    /* Navigation panel */
+    .nav-panel { position: fixed; top: calc(var(--topbar-height) + 16px); left: calc(var(--left-column-width) + 30px); width:220px; background:#fff; border-radius:8px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,0.12); transform: translateX(-18px); opacity: 0; transition: transform .28s ease, opacity .22s ease; z-index:1250; pointer-events: none; }
+    .nav-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    .nav-item { background:#f5f6f8; padding:10px 12px; border-radius:8px; margin-bottom:10px; font-weight:700; cursor:pointer; }
+    .nav-item:hover { background:#eef3ff; }
+
+    /* assignments panel */
+    .assignments-panel { position: fixed; top: calc(var(--topbar-height) + 8px); right: 18px; width: 640px; max-width: calc(100% - 36px); height: calc(100% - 100px); background: white; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.15); transform: translateY(-6px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index:2000; display:flex; flex-direction:column; overflow:auto; padding-bottom: 18px; }
+    .assignments-panel.open { opacity:1; transform: translateY(0); pointer-events:auto; }
+
+    footer.site-footer { position: fixed; left: 0; right: 0; bottom: 0; height: 56px; background: #fafbfd; display:flex; align-items:center; justify-content:center; border-top: 1px solid rgba(0,0,0,0.04); font-size:13px; color:#222; z-index:900; }
+    footer .small { font-weight:700; margin-bottom:4px; font-size:14px; text-align:center; }
+    footer .muted { color:#666; font-size:13px; margin-top:4px; text-align:center; }
+
+    /* Logout modal - centered with overlay and styled buttons */
+    .modal-overlay-global { display:none; position: fixed; inset: 0; background: var(--modal-overlay); z-index:2200; align-items:center; justify-content:center; }
+    .modal-overlay-global.open { display:flex; }
+    .modal-box {
+      width: 360px;
+      max-width: calc(100% - 40px);
+      background: #fff;
+      border-radius:12px;
+      padding:22px 22px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+      text-align:center;
+      animation: fadeIn .14s ease both;
+    }
+    .modal-box h3 { font-size:20px; margin-bottom:8px; font-weight:800; color:#222; }
+    .modal-box p { margin:0; color:#666; }
+    .modal-actions { margin-top:18px; display:flex; gap:14px; justify-content:center; }
+    .modal-btn {
+      padding:10px 18px;
+      border-radius:12px;
+      font-weight:800;
+      border: none;
+      cursor:pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      min-width:84px;
+    }
+    .modal-btn.no { background:#d9534f; color:white; }
+    .modal-btn.yes { background:#28a745; color:white; }
+    .modal-btn:focus { outline: 3px solid rgba(0,0,0,0.06); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 900px) {
+      .content { margin-left: 12px; padding:12px; margin-top: calc(var(--topbar-height) + 22px); }
+      .nav-panel { left: 18px; top:86px; }
+      .assignments-panel { right:12px; width: calc(100% - 24px); top:86px; height: calc(100% - 110px); }
+      .topbar .title { font-size:16px; }
+      .topbar .right { right: 12px; top: 10px; gap:8px; }
+      .menu-btn { top: 12px; left: 10px; width:40px; height:40px; }
+      .recent th.title { width:55%; }
+      .recent th.status, .recent th.date { width:22.5%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar" role="banner" aria-label="Top navigation">
+    <button id="menuButton" class="menu-btn" title="Menu" aria-expanded="false" aria-controls="navPanel" aria-label="Toggle menu">
+      <div class="bars" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+    </button>
+
+    <div class="title" aria-hidden="true">Student Dashboard</div>
+
+    <div class="right" aria-hidden="false">
+      <div class="hello">Hello, <span class="name"><%= user && user.name ? user.name : 'Student' %></span>
+        <span style="font-weight:500; opacity:0.9; margin-left:8px; font-size:13px;">
+          (<%= user && user.email ? user.email : '' %>)
+        </span>
+      </div>
+      <button type="button" class="logout-btn" id="logoutTrigger">Logout</button>
+    </div>
+  </header>
+
+  <div class="left-space" aria-hidden="true"></div>
+  <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
+
+  <div id="navPanel" class="nav-panel" aria-hidden="true">
+    <div class="nav-item" id="navDashboard">Dashboard</div>
+    <div class="nav-item" id="navAllAssignments">View All Assignments</div>
+    <div class="nav-item" id="navProfile">Profile</div>
+  </div>
+
+  <div class="content" id="mainContent" role="main">
+    <div class="wrap">
+      <h1>Assignment Dashboard</h1>
+
+      <div class="cards">
+        <div class="card draft">
+          <h3>Draft</h3>
+          <p><%= counts.Draft %></p>
+        </div>
+        <div class="card submitted">
+          <h3>Submitted</h3>
+          <p><%= counts.Submitted %></p>
+        </div>
+        <div class="card approved">
+          <h3>Approved</h3>
+          <p><%= counts.Approved %></p>
+        </div>
+        <div class="card rejected">
+          <h3>Rejected</h3>
+          <p><%= counts.Rejected %></p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="/student/assignments/upload" class="btn">Upload New Assignment</a>
+        <a href="/student/assignments/bulk-upload" class="btn">Bulk Upload</a>
+      </div>
+
+      <h2 style="margin:0 0 12px">Recent Submissions</h2>
+      <div class="recent" id="recentList" role="region" aria-label="Recent submissions">
+        <table>
+          <thead>
+            <tr>
+              <th class="title">Title</th>
+              <th class="status">Status</th>
+              <th class="date">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for (let i = 0; i < Math.min(recent.length || 0, 5); i++) { 
+                 const r = recent[i]; %>
+              <tr>
+                <td class="title-col" title="<%= r.title %>">
+                  <!-- Removed 'View' link – only title is displayed as requested -->
+                  <%= r.title %>
+                </td>
+                <td class="status-col" aria-label="Status">
+                  <% if (r.status === 'Approved') { %>
+                    <span class="status-approved">Approved</span>
+                  <% } else if (r.status === 'Rejected') { %>
+                    <span class="status-rejected">Rejected</span>
+                  <% } else if (r.status === 'Draft') { %>
+                    <span class="status-draft">Draft</span>
+                  <% } else { %>
+                    <span class="status-submitted"><%= r.status %></span>
+                  <% } %>
+                </td>
+                <td class="date-col" aria-label="Submitted date"><%= new Date(r.createdAt).toLocaleString() %></td>
+              </tr>
+            <% } %>
+
+            <% if (!recent || recent.length === 0) { %>
+              <tr><td colspan="3">No recent submissions</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="assignmentsPanel" class="assignments-panel" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="panel-header">
+      <div>View All Assignments</div>
+      <div>
+        <button id="closeAssignments" class="panel-close" aria-label="Close assignments panel">✕</button>
+      </div>
+    </div>
+    <div class="panel-body" id="panelBody">
+      <div class="empty-msg">No assignments uploaded yet. Upload now!</div>
+    </div>
+  </div>
+
+  <!-- Modal overlay + centered boxed modal -->
+  <div id="logoutModalOverlay" class="modal-overlay-global" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="logoutTitle" aria-describedby="logoutDesc">
+      <h3 id="logoutTitle">Are you sure you want to logout?</h3>
+      <p id="logoutDesc">This will end your session.</p>
+      <div class="modal-actions" role="group" aria-label="Logout choices">
+        <button id="cancelLogout" class="modal-btn no" type="button">No</button>
+        <button id="confirmLogout" class="modal-btn yes" type="button">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer" role="contentinfo">
+    <div>
+      <div class="small">University Assignment Approval System</div>
+      <div class="muted">© 2025 University — All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      const menuButton = document.getElementById('menuButton');
+      const navPanel = document.getElementById('navPanel');
+      const menuOverlay = document.getElementById('menuOverlay');
+
+      function openNav() {
+        navPanel.classList.add('open');
+        navPanel.setAttribute('aria-hidden', 'false');
+        menuOverlay.style.display = 'block';
+        menuOverlay.setAttribute('aria-hidden', 'false');
+        menuButton.setAttribute('aria-expanded', 'true');
+        menuButton.classList.add('open');
+        document.body.classList.add('sidebar-open');
+      }
+      function closeNav() {
+        navPanel.classList.remove('open');
+        navPanel.setAttribute('aria-hidden', 'true');
+        menuOverlay.style.display = 'none';
+        menuOverlay.setAttribute('aria-hidden', 'true');
+        menuButton.setAttribute('aria-expanded', 'false');
+        menuButton.classList.remove('open');
+        document.body.classList.remove('sidebar-open');
+      }
+
+      menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const shown = navPanel.classList.contains('open');
+        if (shown) closeNav(); else openNav();
+      });
+
+      menuOverlay.addEventListener('click', () => { closeNav(); });
+
+      document.addEventListener('click', (e) => {
+        if (!navPanel.contains(e.target) && !menuButton.contains(e.target) && navPanel.classList.contains('open')) {
+          closeNav();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && navPanel.classList.contains('open')) closeNav();
+      });
+
+      document.getElementById('navDashboard').addEventListener('click', () => { closeNav(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+      document.getElementById('navProfile').addEventListener('click', () => { closeNav(); window.location.href = '/student/profile'; });
+      document.getElementById('navAllAssignments').addEventListener('click', () => { closeNav(); window.location.href = '/student/assignments'; });
+    })();
+
+    (function() {
+      const closeAssignmentsBtn = document.getElementById('closeAssignments');
+      const assignmentsPanel = document.getElementById('assignmentsPanel');
+
+      closeAssignmentsBtn.addEventListener('click', () => {
+        assignmentsPanel.classList.remove('open');
+        assignmentsPanel.setAttribute('aria-hidden', 'true');
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && assignmentsPanel.classList.contains('open')) {
+          assignmentsPanel.classList.remove('open');
+          assignmentsPanel.setAttribute('aria-hidden', 'true');
+        }
+      });
+    })();
+
+    (function() {
+      const logoutTrigger = document.getElementById('logoutTrigger');
+      const logoutOverlay = document.getElementById('logoutModalOverlay');
+      const cancelBtn = document.getElementById('cancelLogout');
+      const confirmBtn = document.getElementById('confirmLogout');
+      const mainContent = document.getElementById('mainContent');
+
+      function openModal() {
+        logoutOverlay.classList.add('open');
+        logoutOverlay.setAttribute('aria-hidden', 'false');
+        // blur and make content inert for screen readers
+        mainContent.setAttribute('aria-hidden', 'true');
+        // trap focus on cancelBtn
+        cancelBtn.focus();
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal() {
+        logoutOverlay.classList.remove('open');
+        logoutOverlay.setAttribute('aria-hidden', 'true');
+        mainContent.removeAttribute('aria-hidden');
+        logoutTrigger.focus();
+        document.body.style.overflow = '';
+      }
+
+      logoutTrigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal();
+      });
+
+      cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal();
+      });
+
+      confirmBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // navigate to logout route
+        window.location.href = '/logout';
+      });
+
+      // close on overlay click (only if clicking outside dialog)
+      logoutOverlay.addEventListener('click', (e) => {
+        if (e.target === logoutOverlay) closeModal();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && logoutOverlay.classList.contains('open')) {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

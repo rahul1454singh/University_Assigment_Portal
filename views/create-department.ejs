@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Create Department — Simplified</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--blue:#4b6cb7;--bg:#f3f5f9;--card:#fff}
+    *{box-sizing:border-box}
+
+    body{
+      font-family:Segoe UI,Arial,sans-serif;
+      background:var(--bg);
+      margin:0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      padding:12px;
+    }
+
+    .box{
+      width:100%;
+      max-width:380px;
+      background:var(--card);
+      padding:28px;
+      border-radius:12px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    h2{
+      margin:0 0 18px;
+      text-align:center;
+      font-size:22px;
+      font-weight:800;
+      color:#222;
+    }
+
+    input,select{
+      width:100%;
+      padding:12px;
+      margin:10px 0;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:15px;
+    }
+    input:focus,select:focus{
+      border-color:var(--blue);
+      outline:none;
+      box-shadow:0 0 0 3px rgba(75,108,183,0.15);
+    }
+
+    .btn{
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:8px;
+      background:var(--blue);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      font-size:15px;
+      margin-top:10px;
+      text-align:center;
+      display:block;
+      text-decoration:none;
+    }
+    .btn:hover{background:#3551a1}
+
+    .back{background:#555;margin-top:8px}
+    .back:hover{background:#333}
+
+    .msg{
+      margin-top:14px;
+      padding:10px;
+      border-radius:8px;
+      font-weight:700;
+      text-align:center;
+      font-size:14px;
+    }
+    .ok{background:#d4edda;color:#155724}
+    .err{background:#f8d7da;color:#721c24}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Create Department</h2>
+
+    <form action="/admin/departments/create" method="POST">
+      <input type="text" name="name" placeholder="Department Name" required>
+
+      <select name="type" required>
+        <option value="">Select Program Type</option>
+        <option value="UG">UG (Undergraduate)</option>
+        <option value="PG">PG (Postgraduate)</option>
+        <option value="Research">Research</option>
+      </select>
+
+      <input type="text" name="address" placeholder="Address" required>
+
+      <button class="btn" type="submit">Create Department</button>
+    </form>
+
+    <a href="/admin/departments" class="btn back">Back to Departments List</a>
+
+    <% if(success){ %>
+      <div class="msg ok"><%= success %></div>
+    <% } %>
+    <% if(error){ %>
+      <div class="msg err"><%= error %></div>
+    <% } %>
+  </div>
+</body>
+</html>
