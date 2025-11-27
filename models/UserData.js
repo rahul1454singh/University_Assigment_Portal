@@ -6,7 +6,11 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   phone: { type: String },
   role: { type: String, enum: ["Student", "Professor", "HOD"], default: "Student" },
-  department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" }
+  department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
+
+  //  password reset
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
 });
 
 module.exports = mongoose.models.UserData || mongoose.model("UserData", userSchema);

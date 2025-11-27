@@ -23,35 +23,29 @@ transporter.verify()
   .then(() => console.log("SMTP ready"))
   .catch(err => console.warn("SMTP verify failed:", err));
 
-/**
- * Send account email for create / update.
- * - Shows Email and Password fields.
- * - For "created" it shows a message telling the user to login and upload assignments.
- * - For "updated": if password was changed, the email mentions it and shows the new password.
- *   If password not provided, the Password row shows "(unchanged)" so the email never looks blank.
- */
+
 async function sendUserEmail({ to, name = "", password = "", created = true }) {
   const base = (process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
   const loginUrl = `${base}/login`;
 
-  // Subject varies depending on create vs update and whether password changed
+ 
   const subject = created
     ? "Your University Portal account has been created"
     : (password && password.trim()
         ? "Your University Portal password has been changed"
         : "Your University Portal account was updated");
 
-  // Friendly intro text
+  
   const intro = created
     ? `<p>Hello ${name}</p>
        <p>Your University Portal account has been <strong>created</strong>. Please sign in and upload your assignments.</p>`
     : `<p>Hello ${name}</p>
        <p>Your account was updated.${password && password.trim() ? " Your password was changed." : ""}</p>`;
 
-  // Make password explicit: show provided password or "(unchanged)"
+
   const passwordDisplay = password && password.trim() ? password : "(unchanged)";
 
-  // HTML body with clear Email / Password rows and a Login button
+ 
   const html = `
     <div style="font-family: Arial, Helvetica, sans-serif; padding:16px; color:#222;">
       ${intro}

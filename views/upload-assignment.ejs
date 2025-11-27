@@ -10,7 +10,8 @@
       --card:#ffffff;
       --muted:#666;
       --accent:#3551a1; /* upload button color */
-      --back:#555; /* back button color */
+      --back:#555;       /* back button color */
+      --bulk:#07bd07;    /* bulk upload button color (green) */
       --radius:10px;
       --max-width:760px;
       --pad:20px;
@@ -37,8 +38,17 @@
       box-shadow:var(--shadow);
     }
 
+    /* HEADER ROW: title left, bulk button right */
+    .header-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
     h1{
-      margin:0 0 18px;
+      margin:0;
       font-size:28px;
       letter-spacing:0.2px;
       text-align:left;
@@ -100,6 +110,7 @@
       gap:10px;
       justify-content:flex-end;
       margin-top:8px;
+      flex-wrap:wrap;
     }
 
     .btn{
@@ -111,6 +122,8 @@
       font-weight:700;
       border:none;
       cursor:pointer;
+      text-align:center;
+      min-width:140px;
     }
 
     .btn-back{
@@ -119,6 +132,14 @@
 
     .btn-upload{
       background:var(--accent);
+    }
+
+    .btn-bulk{
+      background:var(--bulk);
+    }
+
+    .btn-bulk:hover{
+      filter:brightness(0.95);
     }
 
     .msg{
@@ -147,14 +168,32 @@
     }
 
     @media (max-width:600px){
-      .actions{flex-direction:column-reverse; align-items:stretch}
+      .header-row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+      }
+      .actions{
+        flex-direction:column-reverse;
+        align-items:stretch;
+      }
       .btn{width:100%}
     }
+     footer.site-footer { position: fixed; left: 0; right: 0; bottom: 0; height: 56px; background: #fafbfd; display:flex; align-items:center; justify-content:center; border-top: 1px solid rgba(0,0,0,0.04); font-size:13px; color:#222; z-index:900; }
+    footer .small { font-weight:700; margin-bottom:4px; font-size:14px; text-align:center; }
+    footer .muted { color:#666; font-size:13px; margin-top:4px; text-align:center; }
   </style>
 </head>
 <body>
   <div class="container" role="main">
-    <h1>Upload Assignment</h1>
+
+    <!-- Title left, bulk button right (same line) -->
+    <div class="header-row">
+      <h1>Upload Assignment</h1>
+      <a href="/student/assignments/bulk-upload" class="btn btn-bulk" title="Upload multiple assignments">
+        Bulk Upload
+      </a>
+    </div>
 
     <% if (error) { %>
       <div class="msg msg-error" role="alert"><%= error %></div>
@@ -207,6 +246,12 @@
         <button type="submit" class="btn btn-upload">Upload</button>
       </div>
     </form>
+    <footer class="site-footer" role="contentinfo">
+    <div>
+      <div class="small">University Assignment Portal</div>
+      <div class="muted">© 2025 University — All rights reserved.</div>
+    </div>
+  </footer>
   </div>
 </body>
 </html>

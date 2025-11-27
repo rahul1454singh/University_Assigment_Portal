@@ -68,13 +68,10 @@
     .btn { padding:8px 12px; background:var(--blue); color:#fff; border-radius:8px; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:8px; border: none; outline: none; box-shadow: none; cursor: pointer; }
     .btn:hover { filter: brightness(0.96); }
     .btn:focus { outline: none; box-shadow: none; }
-    .btn.secondary { background:#555; }
 
     /* Recent submissions list */
     .recent { background: var(--card); padding:12px; border-radius:8px; box-shadow:0 3px 10px rgba(0,0,0,0.05); overflow-x:auto; }
-    /* Use fixed table layout so columns keep equal spacing */
     .recent table { width:100%; border-collapse:collapse; table-layout: fixed; min-width:520px; }
-    /* make three columns: title (flexible), status (narrow), date (narrow) */
     .recent thead th { text-align:left; font-size:14px; padding:12px; color:#333; font-weight:700; }
     .recent th.title { width:60%; }
     .recent th.status, .recent th.date { width:20%; text-align:left; }
@@ -94,15 +91,10 @@
     .nav-item { background:#f5f6f8; padding:10px 12px; border-radius:8px; margin-bottom:10px; font-weight:700; cursor:pointer; }
     .nav-item:hover { background:#eef3ff; }
 
-    /* assignments panel */
     .assignments-panel { position: fixed; top: calc(var(--topbar-height) + 8px); right: 18px; width: 640px; max-width: calc(100% - 36px); height: calc(100% - 100px); background: white; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.15); transform: translateY(-6px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index:2000; display:flex; flex-direction:column; overflow:auto; padding-bottom: 18px; }
     .assignments-panel.open { opacity:1; transform: translateY(0); pointer-events:auto; }
 
-    footer.site-footer { position: fixed; left: 0; right: 0; bottom: 0; height: 56px; background: #fafbfd; display:flex; align-items:center; justify-content:center; border-top: 1px solid rgba(0,0,0,0.04); font-size:13px; color:#222; z-index:900; }
-    footer .small { font-weight:700; margin-bottom:4px; font-size:14px; text-align:center; }
-    footer .muted { color:#666; font-size:13px; margin-top:4px; text-align:center; }
-
-    /* Logout modal - centered with overlay and styled buttons */
+   
     .modal-overlay-global { display:none; position: fixed; inset: 0; background: var(--modal-overlay); z-index:2200; align-items:center; justify-content:center; }
     .modal-overlay-global.open { display:flex; }
     .modal-box {
@@ -199,8 +191,8 @@
       </div>
 
       <div class="actions">
+        <!-- Only single button now -->
         <a href="/student/assignments/upload" class="btn">Upload New Assignment</a>
-        <a href="/student/assignments/bulk-upload" class="btn">Bulk Upload</a>
       </div>
 
       <h2 style="margin:0 0 12px">Recent Submissions</h2>
@@ -214,11 +206,10 @@
             </tr>
           </thead>
           <tbody>
-            <% for (let i = 0; i < Math.min(recent.length || 0, 5); i++) { 
+            <% for (let i = 0; i < Math.min(recent.length || 0, 5); i++) {
                  const r = recent[i]; %>
               <tr>
                 <td class="title-col" title="<%= r.title %>">
-                  <!-- Removed 'View' link – only title is displayed as requested -->
                   <%= r.title %>
                 </td>
                 <td class="status-col" aria-label="Status">
@@ -257,7 +248,6 @@
     </div>
   </div>
 
-  <!-- Modal overlay + centered boxed modal -->
   <div id="logoutModalOverlay" class="modal-overlay-global" aria-hidden="true">
     <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="logoutTitle" aria-describedby="logoutDesc">
       <h3 id="logoutTitle">Are you sure you want to logout?</h3>
@@ -269,12 +259,7 @@
     </div>
   </div>
 
-  <footer class="site-footer" role="contentinfo">
-    <div>
-      <div class="small">University Assignment Approval System</div>
-      <div class="muted">© 2025 University — All rights reserved.</div>
-    </div>
-  </footer>
+  
 
   <script>
     (function() {
@@ -351,9 +336,7 @@
       function openModal() {
         logoutOverlay.classList.add('open');
         logoutOverlay.setAttribute('aria-hidden', 'false');
-        // blur and make content inert for screen readers
         mainContent.setAttribute('aria-hidden', 'true');
-        // trap focus on cancelBtn
         cancelBtn.focus();
         document.body.style.overflow = 'hidden';
       }
@@ -378,11 +361,9 @@
 
       confirmBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        // navigate to logout route
         window.location.href = '/logout';
       });
 
-      // close on overlay click (only if clicking outside dialog)
       logoutOverlay.addEventListener('click', (e) => {
         if (e.target === logoutOverlay) closeModal();
       });
