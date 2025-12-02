@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Edit Assignment</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#222;margin:0;padding:28px}
+    .wrap{max-width:760px;margin:0 auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.04)}
+    h1{margin:0 0 16px}
+    form{margin-top:10px}
+    .field{margin-bottom:14px;display:flex;flex-direction:column;gap:6px}
+    label{font-weight:600;font-size:14px;color:#444}
+    input[type="text"], textarea, select{padding:8px 10px;border-radius:6px;border:1px solid:#d0d5e3;font-size:14px}
+    textarea{min-height:80px;resize:vertical}
+    .file-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .download-btn{padding:6px 10px;border-radius:6px;background:#3551a1;color:#fff;text-decoration:none;font-size:13px;font-weight:600}
+    .delete-file-btn{padding:6px 10px;border-radius:6px;background:#e53e3e;color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer}
+    .btn-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .btn-primary{padding:8px 14px;border-radius:8px;background:#3551a1;color:#fff;border:none;font-weight:700;font-size:14px;cursor:pointer}
+    .btn-secondary{padding:8px 14px;border-radius:8px;background:#555;color:#fff;text-decoration:none;font-weight:700;font-size:14px}
+    .msg-error{padding:8px 10px;border-radius:6px;background:#ffecec;color:#b22222;font-size:14px;margin-bottom:10px}
+    .msg-success{padding:8px 10px;border-radius:6px;background:#e9f7ee;color:#177a3b;font-size:14px;margin-bottom:10px}
+    @media(max-width:600px){body{padding:18px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Edit Assignment</h1>
+
+    <% if (error) { %>
+      <div class="msg-error"><%= error %></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="msg-success"><%= success %></div>
+    <% } %>
+
+    <form action="/student/assignments/<%= assignment._id %>/edit" method="POST" enctype="multipart/form-data">
+      <div class="field">
+        <label for="title">Title</label>
+        <input id="title" name="title" type="text" value="<%= assignment.title || '' %>" required />
+      </div>
+
+      <div class="field">
+        <label for="category">Category</label>
+        <input id="category" name="category" type="text" value="<%= assignment.category || '' %>" required />
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" name="description"><%= assignment.description || '' %></textarea>
+      </div>
+
+      <div class="field">
+        <label>Current file</label>
+        <div class="file-row">
+          <% if (assignment.file && assignment.file.originalname) { %>
+            <span><%= assignment.file.originalname %></span>
+            <a class="download-btn" href="<%= assignment.file.path %>" target="_blank" rel="noopener">Download</a>
+            <button type="button" id="deleteFileBtn" class="delete-file-btn">Delete File</button>
+          <% } else { %>
+            <span>None</span>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="newFile">New upload (PDF, optional)</label>
+        <div class="file-row">
+          <input id="newFile" name="newFile" type="file" accept="application/pdf" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn-primary">Update Assignment</button>
+        <a href="/student/assignments" class="btn-secondary">Back to List</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    var deleteFileBtn = document.getElementById('deleteFileBtn');
+    if (deleteFileBtn) {
+      deleteFileBtn.addEventListener('click', function () {
+        var ok = confirm('Delete only the file? Title, category and description will stay.');
+        if (!ok) return;
+        var id = "<%= assignment._id %>";
+        fetch('/student/assignments/' + id + '/file/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify({})
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.success) {
+            window.location.reload();
+          } else {
+            alert(data && data.message ? data.message : 'File delete failed');
+          }
+        })
+        .catch(function () {
+          alert('File delete failed');
+        });
+      });
+    }
+  </script>
+</body>
+</html>

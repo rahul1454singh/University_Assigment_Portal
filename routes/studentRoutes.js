@@ -1,4 +1,3 @@
-// routes/studentRoutes.js
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
@@ -17,7 +16,9 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    const safe = file.originalname.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\.-]/g, "");
+    const safe = file.originalname
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_\.-]/g, "");
     cb(null, `${Date.now()}_${safe}`);
   }
 });
@@ -51,18 +52,19 @@ router.get("/student/dashboard", verifyStudent, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5)
       .lean();
-    return res.render("student-dashboard", { counts, recent });
+    return res.render("student-dashboard", { counts, recent, user: req.user });
   } catch (err) {
     console.error("Error loading student dashboard:", err);
     return res.status(500).send("Error loading dashboard");
   }
 });
 
-// GET /student/assignments  -> show all assignments for the logged-in student
 router.get("/student/assignments", verifyStudent, async (req, res) => {
   try {
     const userId = req.user._id;
-    const assignments = await Assignment.find({ user: userId }).sort({ createdAt: -1 }).lean();
+    const assignments = await Assignment.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .lean();
     return res.render("assignments-list", { assignments });
   } catch (err) {
     console.error("Error loading assignments list:", err);
@@ -71,7 +73,11 @@ router.get("/student/assignments", verifyStudent, async (req, res) => {
 });
 
 router.get("/student/assignments/upload", verifyStudent, (req, res) => {
-  res.render("upload-assignment", { error: null, success: null, assignmentId: null });
+  res.render("upload-assignment", {
+    error: null,
+    success: null,
+    assignmentId: null
+  });
 });
 
 router.post(
@@ -96,7 +102,7 @@ router.post(
           assignmentId: null
         });
       }
-      const userId = (req.user && req.user._1d) ? req.user._1d : null;
+      const userId = req.user && req.user._id ? req.user._id : null;
       if (!userId) {
         try { fs.unlinkSync(req.file.path); } catch (e) {}
         return res.status(401).render("upload-assignment", {
@@ -123,7 +129,7 @@ router.post(
       return res.render("upload-assignment", {
         error: null,
         success: "Uploaded successfully",
-        assignmentId: saved._1d || saved._id
+        assignmentId: saved._id
       });
     } catch (err) {
       console.error("Upload error:", err);
@@ -139,7 +145,6 @@ router.post(
   }
 );
 
-// Bulk upload routes
 router.get("/student/assignments/bulk-upload", verifyStudent, (req, res) => {
   res.render("bulk-upload-assignments", { error: null, success: null });
 });
@@ -165,7 +170,7 @@ router.post(
           success: null
         });
       }
-      const userId = (req.user && req.user._id) ? req.user._id : null;
+      const userId = req.user && req.user._id ? req.user._id : null;
       if (!userId) {
         for (const f of files) { try { fs.unlinkSync(f.path); } catch (e) {} }
         return res.status(401).render("bulk-upload-assignments", {
@@ -193,7 +198,11 @@ router.post(
           }
         });
         const saved = await newAssignment.save();
-        created.push({ id: saved._id, title: saved.title, file: saved.file.originalname });
+        created.push({
+          id: saved._id,
+          title: saved.title,
+          file: saved.file.originalname
+        });
       }
 
       return res.render("bulk-upload-result", { created });
@@ -209,5 +218,148 @@ router.post(
     }
   }
 );
+
+router.post("/student/assignments/:id/file/delete", verifyStudent, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      user: userId
+    });
+    if (!assignment) {
+      return res.status(404).json({ success: false, message: "Assignment not found" });
+    }
+    if (!assignment.file || !assignment.file.filename) {
+      return res.json({ success: true });
+    }
+    const oldPath = path.join(uploadDir, assignment.file.filename);
+    try { fs.unlinkSync(oldPath); } catch (e) {}
+    assignment.file = undefined;
+    await assignment.save();
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting file:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.get("/student/assignments/:id/edit", verifyStudent, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      user: userId
+    }).lean();
+    if (!assignment) {
+      return res.status(404).send("Assignment not found");
+    }
+    return res.render("edit-assignment", { assignment, error: null, success: null });
+  } catch (err) {
+    console.error("Error loading edit page:", err);
+    return res.status(500).send("Error loading assignment");
+  }
+});
+
+router.post(
+  "/student/assignments/:id/edit",
+  verifyStudent,
+  upload.single("newFile"),
+  async (req, res) => {
+    try {
+      const userId = req.user._id;
+      let assignment = await Assignment.findOne({
+        _id: req.params.id,
+        user: userId
+      });
+      if (!assignment) {
+        return res.status(404).send("Assignment not found");
+      }
+
+      const { title, description, category } = req.body;
+      if (!title || !category) {
+        if (req.file) { try { fs.unlinkSync(req.file.path); } catch (e) {} }
+        return res.render("edit-assignment", {
+          assignment: assignment.toObject(),
+          error: "Title and Category are required.",
+          success: null
+        });
+      }
+
+      assignment.title = title;
+      assignment.description = description;
+      assignment.category = category;
+
+      if (req.file) {
+        if (assignment.file && assignment.file.filename) {
+          const oldPath = path.join(uploadDir, assignment.file.filename);
+          try { fs.unlinkSync(oldPath); } catch (e) {}
+        }
+        assignment.file = {
+          filename: req.file.filename,
+          originalname: req.file.originalname,
+          path: `/uploads/${req.file.filename}`,
+          size: req.file.size,
+          mimetype: req.file.mimetype
+        };
+      }
+
+      const saved = await assignment.save();
+      return res.render("edit-assignment", {
+        assignment: saved.toObject(),
+        error: null,
+        success: "Updated successfully"
+      });
+    } catch (err) {
+      console.error("Error updating assignment:", err);
+      let msg = "Server error while updating.";
+      if (err.message && err.message.includes("Only PDF")) msg = "Only PDF files are allowed.";
+      if (err.code === "LIMIT_FILE_SIZE") msg = "File too large. Maximum 10MB allowed.";
+      return res.status(500).render("edit-assignment", {
+        assignment: { _id: req.params.id, title: req.body.title, description: req.body.description, category: req.body.category },
+        error: msg,
+        success: null
+      });
+    }
+  }
+);
+
+router.post("/student/assignments/:id/delete", verifyStudent, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      user: userId
+    });
+    if (!assignment) {
+      return res.status(404).json({ success: false, message: "Assignment not found" });
+    }
+    if (assignment.file && assignment.file.filename) {
+      const oldPath = path.join(uploadDir, assignment.file.filename);
+      try { fs.unlinkSync(oldPath); } catch (e) {}
+    }
+    await Assignment.deleteOne({ _id: assignment._id });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting assignment:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.get("/student/assignments/:id", verifyStudent, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      user: userId
+    }).lean();
+    if (!assignment) {
+      return res.status(404).send("Assignment not found");
+    }
+    return res.render("assignment-details", { assignment });
+  } catch (err) {
+    console.error("Error loading assignment details:", err);
+    return res.status(500).send("Error loading assignment");
+  }
+});
 
 module.exports = router;

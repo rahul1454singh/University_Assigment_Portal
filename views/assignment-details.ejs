@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title><%= assignment.title %> | Assignment</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#222;margin:0;padding:28px}
+    .wrap{max-width:760px;margin:0 auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.04)}
+    h1{margin:0 0 10px}
+    .meta{margin:8px 0 16px;font-size:14px;color:#555}
+    .row{display:flex;justify-content:space-between;gap:12px;margin:6px 0;font-size:14px}
+    .label{font-weight:600;color:#555}
+    .status{display:inline-block;padding:6px 10px;border-radius:18px;font-weight:700;font-size:13px}
+    .s-approved{background:#e9f7ee;color:#177a3b}
+    .s-rejected{background:#fff0f0;color:#b22222}
+    .s-draft{background:#eef2ff;color:#2b3ea8}
+    .s-submitted{background:#f0fbf6;color:#1f7a5a}
+    a.btn{display:inline-block;margin-top:16px;padding:8px 14px;border-radius:8px;background:#555;color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+    a.file-link{color:#3551a1;font-weight:700;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1><%= assignment.title %></h1>
+    <div class="meta">
+      Submitted: <%= new Date(assignment.createdAt).toLocaleString() %>
+    </div>
+
+    <div class="row">
+      <div class="label">Category</div>
+      <div><%= assignment.category || "-" %></div>
+    </div>
+
+    <div class="row">
+      <div class="label">Status</div>
+      <div>
+        <% if (assignment.status === 'Approved') { %>
+          <span class="status s-approved">Approved</span>
+        <% } else if (assignment.status === 'Rejected') { %>
+          <span class="status s-rejected">Rejected</span>
+        <% } else if (assignment.status === 'Draft') { %>
+          <span class="status s-draft">Draft</span>
+        <% } else { %>
+          <span class="status s-submitted"><%= assignment.status %></span>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">Current Reviewer</div>
+      <div><%= assignment.currentReviewer || assignment.reviewerName || "-" %></div>
+    </div>
+
+    <div class="row">
+      <div class="label">File</div>
+      <div>
+        <% if (assignment.file && assignment.file.path) { %>
+          <a class="file-link" href="<%= assignment.file.path %>" target="_blank" rel="noopener">View PDF</a>
+        <% } else { %>
+          -
+        <% } %>
+      </div>
+    </div>
+
+    <a href="/student/assignments" class="btn">Back to Assignments</a>
+  </div>
+</body>
+</html>
