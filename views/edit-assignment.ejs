@@ -2,26 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Edit Assignment</title>
+  <title>Edit - <%= assignment.title %></title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body{font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#222;margin:0;padding:28px}
-    .wrap{max-width:760px;margin:0 auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.04)}
-    h1{margin:0 0 16px}
-    form{margin-top:10px}
-    .field{margin-bottom:14px;display:flex;flex-direction:column;gap:6px}
-    label{font-weight:600;font-size:14px;color:#444}
-    input[type="text"], textarea, select{padding:8px 10px;border-radius:6px;border:1px solid:#d0d5e3;font-size:14px}
-    textarea{min-height:80px;resize:vertical}
-    .file-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .download-btn{padding:6px 10px;border-radius:6px;background:#3551a1;color:#fff;text-decoration:none;font-size:13px;font-weight:600}
-    .delete-file-btn{padding:6px 10px;border-radius:6px;background:#e53e3e;color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer}
-    .btn-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-    .btn-primary{padding:8px 14px;border-radius:8px;background:#3551a1;color:#fff;border:none;font-weight:700;font-size:14px;cursor:pointer}
-    .btn-secondary{padding:8px 14px;border-radius:8px;background:#555;color:#fff;text-decoration:none;font-weight:700;font-size:14px}
-    .msg-error{padding:8px 10px;border-radius:6px;background:#ffecec;color:#b22222;font-size:14px;margin-bottom:10px}
-    .msg-success{padding:8px 10px;border-radius:6px;background:#e9f7ee;color:#177a3b;font-size:14px;margin-bottom:10px}
-    @media(max-width:600px){body{padding:18px}}
+    :root{
+      --bg: #f3f5f9;
+      --card: #fff;
+      --muted: #666;
+      --accent: #3551a1;
+      --accent-strong: #2d4e98;
+      --muted-btn: #555;
+      --danger: #d9534f;
+      --radius: 10px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.04);
+      --gap: 12px;
+    }
+
+    /* Page layout */
+    html, body { height: 100%; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: #222;
+      margin: 0;
+      padding: 28px;
+      -webkit-font-smoothing:antialiased;
+    }
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 22px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+    }
+    h1 { margin: 0 0 10px; font-size: 28px; }
+
+    /* Form controls */
+    label { display:block; margin-top:16px; font-weight:700; color:#444; }
+    input[type="text"],
+    textarea,
+    select,
+    input[type="file"] {
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #e6e9ee;
+      margin-top:8px;
+      box-sizing:border-box;
+      font-size:14px;
+      background: #fff;
+      color: #222;
+    }
+    textarea { min-height:120px; resize:vertical; }
+
+    .muted { color: var(--muted); font-size:13px; margin-top:8px; display:inline-block; vertical-align:middle; }
+
+    /* Alerts */
+    .msg-error { background:#fff0f0; color:#8b1d1d; padding:10px; border-radius:8px; margin-bottom:12px; border:1px solid rgba(200,30,30,0.08) }
+    .msg-success { background:#eaf0ff; color:#0b2b66; padding:10px; border-radius:8px; margin-bottom:12px; border:1px solid rgba(53,81,161,0.12) }
+
+    /* File row - prevents overflow */
+    .file-row {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:8px;
+      flex-wrap:wrap;
+    }
+    .file-row .view-btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:8px;
+      background:#fff;
+      color:var(--accent);
+      font-weight:800;
+      border:1px solid #e6e9ee;
+      text-decoration:none;
+      box-shadow:0 4px 10px rgba(53,81,161,0.04);
+      white-space:nowrap;
+    }
+    .file-row .view-btn:hover { background:#fbfcff; }
+    .file-row .filename {
+      color:var(--muted);
+      font-size:14px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width: calc(100% - 150px); /* leave space for button; helps prevent overflow */
+    }
+
+    /* Actions */
+    .actions { margin-top:18px; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+    .btn { padding:10px 14px; border-radius:8px; text-decoration:none; background:var(--muted-btn); color:#fff; font-weight:700; border:0; cursor:pointer; display:inline-block; }
+    .btn.ghost { background:#fff; color:var(--muted-btn); border:1px solid #e6e9ee; }
+    .btn.save { background:var(--accent); box-shadow: 0 6px 18px rgba(53,81,161,0.12); color:#fff; }
+    .btn.cancel { background:#777; color:#fff; }
+    .file-input { padding:6px 8px; }
+
+    /* Small screens */
+    @media (max-width:760px) {
+      .wrap{padding:16px;}
+      h1{font-size:22px;}
+      .file-row .filename { max-width:100%; white-space:normal; }
+      .actions { justify-content:stretch; }
+      .btn { width:100%; text-align:center; }
+      .actions .btn + .btn { margin-top:8px; }
+    }
+
+    /* Very small screens - stack form nicely */
+    @media (max-width:420px) {
+      body { padding:14px; }
+      .wrap { padding:14px; border-radius:8px; }
+      label { margin-top:12px; }
+      textarea { min-height:100px; }
+    }
+
+    /* utility */
+    .inline-note { font-size:13px; color:var(--muted); margin-top:8px; display:block; }
   </style>
 </head>
 <body>
@@ -35,74 +136,51 @@
       <div class="msg-success"><%= success %></div>
     <% } %>
 
-    <form action="/student/assignments/<%= assignment._id %>/edit" method="POST" enctype="multipart/form-data">
-      <div class="field">
+    <% if (assignment.status && assignment.status !== 'Draft') { %>
+      <div class="muted">This assignment has been submitted and cannot be edited.</div>
+      <div style="margin-top:14px;">
+        <a href="/student/assignments/<%= assignment._id %>" class="btn ghost">Back to Assignment</a>
+      </div>
+    <% } else { %>
+
+      <form method="post" action="/student/assignments/<%= assignment._id %>/edit" enctype="multipart/form-data" novalidate>
         <label for="title">Title</label>
-        <input id="title" name="title" type="text" value="<%= assignment.title || '' %>" required />
-      </div>
+        <input id="title" name="title" type="text" value="<%= assignment.title %>" required />
 
-      <div class="field">
-        <label for="category">Category</label>
-        <input id="category" name="category" type="text" value="<%= assignment.category || '' %>" required />
-      </div>
-
-      <div class="field">
         <label for="description">Description</label>
-        <textarea id="description" name="description"><%= assignment.description || '' %></textarea>
-      </div>
+        <textarea id="description" name="description" rows="6"><%= assignment.description || '' %></textarea>
 
-      <div class="field">
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+          <option value="Assignment" <%= assignment.category === 'Assignment' ? 'selected' : '' %>>Assignment</option>
+          <option value="Thesis" <%= assignment.category === 'Thesis' ? 'selected' : '' %>>Thesis</option>
+          <option value="Report" <%= assignment.category === 'Report' ? 'selected' : '' %>>Report</option>
+        </select>
+
         <label>Current file</label>
-        <div class="file-row">
-          <% if (assignment.file && assignment.file.originalname) { %>
-            <span><%= assignment.file.originalname %></span>
-            <a class="download-btn" href="<%= assignment.file.path %>" target="_blank" rel="noopener">Download</a>
-            <button type="button" id="deleteFileBtn" class="delete-file-btn">Delete File</button>
-          <% } else { %>
-            <span>None</span>
-          <% } %>
-        </div>
-      </div>
 
-      <div class="field">
-        <label for="newFile">New upload (PDF, optional)</label>
-        <div class="file-row">
-          <input id="newFile" name="newFile" type="file" accept="application/pdf" />
-        </div>
-      </div>
+        <% if (assignment.file && assignment.file.path) { %>
+          <div class="file-row" role="group" aria-label="Current file">
+            <a class="view-btn" href="<%= assignment.file.path %>" target="_blank" rel="noopener">View PDF</a>
+            <span class="filename" title="<%= assignment.file.originalname %>"><%= assignment.file.originalname %></span>
+            <span class="muted" style="margin-left:auto; min-width:120px; text-align:right;"><%= assignment.file.size ? (Math.round(assignment.file.size / 1024) + ' KB') : '' %></span>
+          </div>
+        <% } else { %>
+          <div class="muted">No file uploaded</div>
+        <% } %>
 
-      <div class="btn-row">
-        <button type="submit" class="btn-primary">Update Assignment</button>
-        <a href="/student/assignments" class="btn-secondary">Back to List</a>
-      </div>
-    </form>
+        <label for="newFile">Replace file (PDF only, max 10MB)</label>
+        <input id="newFile" class="file-input" name="newFile" type="file" accept="application/pdf" />
+
+        <div class="inline-note">Allowed: PDF. Max size: 10MB.</div>
+
+        <div class="actions">
+          <!-- changed Cancel to go back to the assignments list -->
+          <a href="/student/assignments" class="btn cancel">Cancel</a>
+          <button type="submit" class="btn save">Save Changes</button>
+        </div>
+      </form>
+    <% } %>
   </div>
-
-  <script>
-    var deleteFileBtn = document.getElementById('deleteFileBtn');
-    if (deleteFileBtn) {
-      deleteFileBtn.addEventListener('click', function () {
-        var ok = confirm('Delete only the file? Title, category and description will stay.');
-        if (!ok) return;
-        var id = "<%= assignment._id %>";
-        fetch('/student/assignments/' + id + '/file/delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-          body: JSON.stringify({})
-        })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (data && data.success) {
-            window.location.reload();
-          } else {
-            alert(data && data.message ? data.message : 'File delete failed');
-          }
-        })
-        .catch(function () {
-          alert('File delete failed');
-        });
-      });
-    }
-  </script>
 </body>
 </html>

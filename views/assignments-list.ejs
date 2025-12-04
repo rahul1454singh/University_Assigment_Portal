@@ -2,199 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Your Assignments</title>
+  <title><%= assignment.title %> | Assignment</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body{font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#222;padding:28px;margin:0}
-    .wrap{max-width:940px;margin:0 auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.04)}
-    h1{margin:0 0 16px}
-    .top-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
-    .btn{padding:8px 12px;border-radius:8px;text-decoration:none;color:#fff;font-weight:700;display:inline-block;font-size:14px}
-    .btn-back{background:#555}
-    .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .select, .sort-btn{padding:7px 10px;border-radius:6px;border:1px solid #d0d5e3;font-size:14px;background:#fafbfd;cursor:pointer}
-    .sort-btn{font-weight:600}
-    table{width:100%;border-collapse:collapse;margin-top:8px}
-    thead th{font-weight:700;padding:12px 10px;background:#fafbfd;text-align:left;border-bottom:1px solid #eee;font-size:14px}
-    tbody td{padding:12px 10px;border-bottom:1px solid #f1f3f6;font-size:14px}
-    tbody tr{cursor:pointer;transition:background .18s, transform .18s, opacity .18s}
-    tbody tr:hover{background:#f7f9ff}
-    tbody tr.removing{opacity:0;transform:translateX(-8px)}
+    body{font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#222;margin:0;padding:28px}
+    .wrap{max-width:760px;margin:0 auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.04)}
+    h1{margin:0 0 10px}
+    .meta{margin:8px 0 16px;font-size:14px;color:#555}
+    .row{display:flex;justify-content:space-between;gap:12px;margin:6px 0;font-size:14px}
+    .label{font-weight:600;color:#555}
     .status{display:inline-block;padding:6px 10px;border-radius:18px;font-weight:700;font-size:13px}
     .s-approved{background:#e9f7ee;color:#177a3b}
     .s-rejected{background:#fff0f0;color:#b22222}
     .s-draft{background:#eef2ff;color:#2b3ea8}
     .s-submitted{background:#f0fbf6;color:#1f7a5a}
+    a.btn{display:inline-block;margin-top:16px;padding:8px 14px;border-radius:8px;background:#555;color:#fff;text-decoration:none;font-weight:600;font-size:14px}
     a.file-link{color:#3551a1;font-weight:700;text-decoration:none}
-    .empty{padding:28px;text-align:center;color:#666}
-    .action-col{white-space:nowrap}
-    .action-btn{border:none;border-radius:6px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer;margin-right:6px}
-    .action-edit{background:#3551a1;color:#fff}
-    .action-delete{background:#e53e3e;color:#fff}
-    @media (max-width:700px){
-      .top-actions{flex-direction:column;align-items:flex-start}
-      table{font-size:13px}
-    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="top-actions">
-      <h1>Your Assignments</h1>
-      <div class="controls">
-        <select id="statusFilter" class="select">
-          <option value="All">All Status</option>
-          <option value="Draft">Draft</option>
-          <option value="Submitted">Submitted</option>
-          <option value="Approved">Approved</option>
-          <option value="Rejected">Rejected</option>
-        </select>
-        <button id="sortDateBtn" class="sort-btn" type="button">Sort by Date (Newest)</button>
-        <a href="/student/dashboard" class="btn btn-back">Back to Dashboard</a>
+    <h1><%= assignment.title %></h1>
+    <div class="meta">
+      Submitted: <%= new Date(assignment.createdAt).toLocaleString() %>
+    </div>
+
+    <div class="row">
+      <div class="label">Category</div>
+      <div><%= assignment.category || "-" %></div>
+    </div>
+
+    <div class="row">
+      <div class="label">Status</div>
+      <div>
+        <% if (assignment.status === 'Approved') { %>
+          <span class="status s-approved">Approved</span>
+        <% } else if (assignment.status === 'Rejected') { %>
+          <span class="status s-rejected">Rejected</span>
+        <% } else if (assignment.status === 'Draft') { %>
+          <span class="status s-draft">Draft</span>
+        <% } else { %>
+          <span class="status s-submitted"><%= assignment.status %></span>
+        <% } %>
       </div>
     </div>
 
-    <% if (!assignments || assignments.length === 0) { %>
-      <div class="empty">No assignments found. Upload your first assignment.</div>
-    <% } else { %>
-      <table>
-        <thead>
-          <tr>
-            <th style="width:24%">Title</th>
-            <th style="width:14%">Category</th>
-            <th style="width:14%">Status</th>
-            <th style="width:16%">Current Reviewer</th>
-            <th style="width:10%">File</th>
-            <th style="width:12%">Submitted Date</th>
-            <th style="width:10%">Action</th>
-          </tr>
-        </thead>
-        <tbody id="assignmentsBody">
-          <% assignments.forEach(function(a){ %>
-            <tr
-              data-status="<%= a.status %>"
-              data-date="<%= new Date(a.createdAt).getTime() %>"
-              data-href="/student/assignments/<%= a._id %>"
-              data-id="<%= a._id %>"
-            >
-              <td><%= a.title %></td>
-              <td><%= a.category || '-' %></td>
-              <td>
-                <% if (a.status === 'Approved') { %>
-                  <span class="status s-approved">Approved</span>
-                <% } else if (a.status === 'Rejected') { %>
-                  <span class="status s-rejected">Rejected</span>
-                <% } else if (a.status === 'Draft') { %>
-                  <span class="status s-draft">Draft</span>
-                <% } else { %>
-                  <span class="status s-submitted"><%= a.status %></span>
-                <% } %>
-              </td>
-              <td><%= a.currentReviewer || a.reviewerName || '-' %></td>
-              <td>
-                <% if (a.file && a.file.path) { %>
-                  <a class="file-link" href="<%= a.file.path %>" target="_blank" rel="noopener" onclick="event.stopPropagation()">View PDF</a>
-                <% } else { %>
-                  -
-                <% } %>
-              </td>
-              <td><%= new Date(a.createdAt).toLocaleString() %></td>
-              <td class="action-col">
-                <button type="button" class="action-btn action-edit" data-id="<%= a._id %>">Edit</button>
-                <button type="button" class="action-btn action-delete" data-id="<%= a._id %>">Delete</button>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    <% } %>
+    <div class="row">
+      <div class="label">Current Reviewer</div>
+      <div><%= assignment.currentReviewer || assignment.reviewerName || "-" %></div>
+    </div>
+
+    <div class="row">
+      <div class="label">File</div>
+      <div>
+        <% if (assignment.file && assignment.file.path) { %>
+          <a class="file-link" href="<%= assignment.file.path %>" target="_blank" rel="noopener">View PDF</a>
+        <% } else { %>
+          -
+        <% } %>
+      </div>
+    </div>
+
+    <a href="/student/assignments" class="btn">Back to Assignments</a>
   </div>
-
-  <script>
-    var statusFilter = document.getElementById('statusFilter');
-    var sortDateBtn = document.getElementById('sortDateBtn');
-    var tbody = document.getElementById('assignmentsBody');
-    var ascending = false;
-
-    if (statusFilter && tbody) {
-      statusFilter.addEventListener('change', function () {
-        var value = statusFilter.value;
-        var rows = tbody.querySelectorAll('tr');
-        rows.forEach(function (row) {
-          var status = row.getAttribute('data-status');
-          row.style.display = (value === 'All' || status === value) ? '' : 'none';
-        });
-      });
-    }
-
-    if (sortDateBtn && tbody) {
-      sortDateBtn.addEventListener('click', function () {
-        var rows = Array.from(tbody.querySelectorAll('tr'));
-        rows.sort(function (a, b) {
-          var da = Number(a.getAttribute('data-date'));
-          var db = Number(b.getAttribute('data-date'));
-          return ascending ? da - db : db - da;
-        });
-        rows.forEach(function (row) { tbody.appendChild(row); });
-        ascending = !ascending;
-        sortDateBtn.textContent = ascending ? 'Sort by Date (Oldest)' : 'Sort by Date (Newest)';
-      });
-    }
-
-    if (tbody) {
-      // whole row click -> details
-      tbody.querySelectorAll('tr').forEach(function (row) {
-        row.addEventListener('click', function () {
-          var href = row.getAttribute('data-href');
-          if (href) window.location.href = href;
-        });
-      });
-
-      // edit buttons
-      document.querySelectorAll('.action-edit').forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          var id = this.getAttribute('data-id');
-          if (id) window.location.href = '/student/assignments/' + id + '/edit';
-        });
-      });
-
-      // delete buttons
-      document.querySelectorAll('.action-delete').forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          var id = this.getAttribute('data-id');
-          if (!id) return;
-          var ok = confirm('Are you sure you want to delete this assignment?');
-          if (!ok) return;
-          var row = this.closest('tr');
-          fetch('/student/assignments/' + id + '/delete', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({})
-          })
-          .then(function (res) { return res.json(); })
-          .then(function (data) {
-            if (data && data.success) {
-              if (row) {
-                row.classList.add('removing');
-                setTimeout(function () {
-                  if (row.parentNode) row.parentNode.removeChild(row);
-                }, 220);
-              }
-            } else {
-              alert(data && data.message ? data.message : 'Delete failed');
-            }
-          })
-          .catch(function () {
-            alert('Delete failed');
-          });
-        });
-      });
-    }
-  </script>
 </body>
 </html>

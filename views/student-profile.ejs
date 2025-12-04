@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Profile</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--blue:#4b6cb7;--bg:#f3f5f9;--card:#fff}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Segoe UI",sans-serif;background:var(--bg);color:#222;padding:18px}
+    .container{max-width:960px;margin:24px auto}
+    .card{background:var(--card);padding:22px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.06)}
+    .row{display:flex;gap:18px;align-items:center}
+    .avatar{
+      width:84px;height:84px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:32px;flex-shrink:0;
+    }
+    h1{font-size:24px;margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    label{font-weight:700;font-size:13px;margin-bottom:6px;display:block;color:#333}
+    input[type=text],input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;background:#fff}
+    input[readonly]{background:#f5f6f8;color:#666}
+    .small{font-size:13px;color:#666;margin-top:6px}
+    .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+    .btn{padding:8px 14px;border-radius:8px;background:var(--blue);color:#fff;border:none;font-weight:700;cursor:pointer}
+    .btn.ghost{background:#777}
+    .meta{color:#666;font-size:13px;margin-left:12px}
+    @media (max-width:760px){ .grid{grid-template-columns:1fr} .row{flex-direction:column;align-items:flex-start} .avatar{width:72px;height:72px;font-size:28px} }
+    .msg{padding:10px;border-radius:8px;margin-top:10px;}
+    .msg.success{background:#e9f7ee;color:#1f8a3a}
+    .msg.error{background:#fdecea;color:#a12a2a}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card" role="main">
+      <div class="row">
+        <div class="avatar">
+          <% 
+            let initial = 'S';
+            if (user && user.name) {
+              const s = user.name.trim();
+              if (s.length) initial = s[0].toUpperCase();
+            }
+          %>
+          <%= initial %>
+        </div>
+        <div>
+          <h1>Profile</h1>
+          <div class="meta"><strong><%= user && user.name ? user.name : '' %></strong> — <%= user && user.email ? user.email : '' %></div>
+        </div>
+      </div>
+
+      <form id="profileForm" action="/student/profile" method="POST">
+        <div class="grid" style="margin-top:18px;">
+          <div>
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" value="<%= user && user.name ? user.name : '' %>" readonly />
+            <div class="small">Name cannot be changed. Contact admin to update.</div>
+          </div>
+
+          <div>
+            <label for="department">Department</label>
+            <input id="department" name="department" type="text" value="<%= user && user.departmentName ? user.departmentName : (user.department || '') %>" readonly />
+            <div class="small">Department is locked.</div>
+          </div>
+
+          <div>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value="<%= user && user.email ? user.email : '' %>" readonly />
+            <div class="small">Email cannot be changed from profile.</div>
+          </div>
+
+          <div>
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" type="text" value="<%= user && user.phone ? user.phone : '' %>" />
+          </div>
+
+          <div style="grid-column:1 / -1;">
+            <label for="newPassword">Change your password</label>
+            <input id="newPassword" name="newPassword" type="password" placeholder="New password" autocomplete="new-password" />
+            <div class="small">Leave blank to keep current password. Only enter new password to change it.</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="cancelBtn" class="btn ghost">Cancel</button>
+          <button type="submit" class="btn">Save Changes</button>
+        </div>
+
+        <div id="profileMsg" style="display:none"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const form = document.getElementById('profileForm');
+      const msg = document.getElementById('profileMsg');
+      const cancel = document.getElementById('cancelBtn');
+
+      cancel.addEventListener('click', () => { window.location.href = '/student/dashboard'; });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msg.style.display = 'none';
+        const data = {
+          phone: form.phone.value.trim(),
+          newPassword: form.newPassword.value.trim()
+        };
+
+        if (data.newPassword && data.newPassword.length < 6) {
+          msg.style.display = 'block'; msg.className = 'msg error'; msg.textContent = 'Password must be at least 6 characters.'; return;
+        }
+
+        try {
+          const res = await fetch('/student/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const json = await res.json();
+          if (res.ok) {
+            msg.style.display = 'block'; msg.className = 'msg success'; msg.textContent = json.message || 'Profile updated.';
+            form.newPassword.value = '';
+            if (json.user) {
+              if (json.user.phone) form.phone.value = json.user.phone || '';
+            }
+          } else {
+            msg.style.display = 'block'; msg.className = 'msg error'; msg.textContent = json.error || 'Update failed.';
+          }
+        } catch (err) {
+          msg.style.display = 'block'; msg.className = 'msg error'; msg.textContent = 'Network error. Try again.';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
