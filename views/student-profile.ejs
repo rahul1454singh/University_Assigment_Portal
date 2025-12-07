@@ -19,7 +19,6 @@
     label{font-weight:700;font-size:13px;margin-bottom:6px;display:block;color:#333}
     input[type=text],input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;background:#fff}
     input[readonly]{background:#f5f6f8;color:#666}
-    .small{font-size:13px;color:#666;margin-top:6px}
     .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
     .btn{padding:8px 14px;border-radius:8px;background:var(--blue);color:#fff;border:none;font-weight:700;cursor:pointer}
     .btn.ghost{background:#777}
@@ -34,7 +33,7 @@
   <div class="container">
     <div class="card" role="main">
       <div class="row">
-        <div class="avatar">
+        <div class="avatar" aria-hidden="true">
           <% 
             let initial = 'S';
             if (user && user.name) {
@@ -55,19 +54,32 @@
           <div>
             <label for="name">Name</label>
             <input id="name" name="name" type="text" value="<%= user && user.name ? user.name : '' %>" readonly />
-            <div class="small">Name cannot be changed. Contact admin to update.</div>
           </div>
 
           <div>
             <label for="department">Department</label>
-            <input id="department" name="department" type="text" value="<%= user && user.departmentName ? user.departmentName : (user.department || '') %>" readonly />
-            <div class="small">Department is locked.</div>
+            <% 
+              // determine the department display name with fallbacks
+              let deptDisplay = "";
+              if (user) {
+                if (typeof user.departmentName === 'string' && user.departmentName.length) {
+                  deptDisplay = user.departmentName;
+                } else if (user.department && typeof user.department === 'object' && user.department.name) {
+                  deptDisplay = user.department.name;
+                } else if (user.department && typeof user.department === 'string') {
+                  // If department is still an id string, show blank or the id (you likely don't want to show id)
+                  deptDisplay = ""; 
+                } else {
+                  deptDisplay = "";
+                }
+              }
+            %>
+            <input id="department" name="departmentName" type="text" value="<%= deptDisplay %>" readonly />
           </div>
 
           <div>
             <label for="email">Email</label>
             <input id="email" name="email" type="email" value="<%= user && user.email ? user.email : '' %>" readonly />
-            <div class="small">Email cannot be changed from profile.</div>
           </div>
 
           <div>
@@ -78,7 +90,6 @@
           <div style="grid-column:1 / -1;">
             <label for="newPassword">Change your password</label>
             <input id="newPassword" name="newPassword" type="password" placeholder="New password" autocomplete="new-password" />
-            <div class="small">Leave blank to keep current password. Only enter new password to change it.</div>
           </div>
         </div>
 
@@ -87,7 +98,7 @@
           <button type="submit" class="btn">Save Changes</button>
         </div>
 
-        <div id="profileMsg" style="display:none"></div>
+        <div id="profileMsg" style="display:none" role="status"></div>
       </form>
     </div>
   </div>
@@ -106,6 +117,7 @@
         const data = {
           phone: form.phone.value.trim(),
           newPassword: form.newPassword.value.trim()
+          // note: department/name/email are readonly and not sent for update
         };
 
         if (data.newPassword && data.newPassword.length < 6) {
@@ -122,9 +134,7 @@
           if (res.ok) {
             msg.style.display = 'block'; msg.className = 'msg success'; msg.textContent = json.message || 'Profile updated.';
             form.newPassword.value = '';
-            if (json.user) {
-              if (json.user.phone) form.phone.value = json.user.phone || '';
-            }
+            if (json.user && json.user.phone) form.phone.value = json.user.phone || '';
           } else {
             msg.style.display = 'block'; msg.className = 'msg error'; msg.textContent = json.error || 'Update failed.';
           }
