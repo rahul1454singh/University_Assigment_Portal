@@ -5,6 +5,7 @@
   <title>Admin Dashboard</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
+    /* Reset / base */
     * { box-sizing: border-box; margin:0; padding:0; }
     html,body { height:100%; }
     body {
@@ -14,19 +15,24 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: background 0.25s;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
 
-    /* ✅ FIXED NAVBAR */
+    /* Top navbar */
     .navbar {
       background: #4b6cb7;
       height: 64px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;     /* <-- PERFECT vertical alignment */
+      align-items: center;
       padding: 0 16px;
+      position: relative;
       box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      z-index: 60;
     }
 
+    /* Menu button (top-left) */
     .menu-toggle {
       width:44px;
       height:44px;
@@ -36,91 +42,407 @@
       cursor:pointer;
       border-radius:8px;
       transition: background .15s;
+      flex: 0 0 auto;
     }
+    .menu-toggle:hover { background: rgba(255,255,255,0.06); }
 
     .menu-toggle .bars {
       display:flex;
       flex-direction:column;
       gap:6px;
+      align-items:center;
+      justify-content:center;
     }
     .menu-toggle .bars span {
+      display:block;
       width:20px;
       height:2.6px;
       background:white;
       border-radius:2px;
+      transition: transform .18s, opacity .12s;
     }
 
-    /* ✅ FIXED: REMOVE ABSOLUTE — USE NORMAL FLEX */
+    /* Title centered */
     .navbar .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
       font-weight: 800;
       color: white;
       font-size: 20px;
       text-align: center;
-      margin: 0 auto;   /* <-- centers text */
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60%;
     }
 
+    /* Right side (hello) */
     .navbar .right {
+      margin-left: auto;
       display:flex;
+      gap:12px;
       align-items:center;
       color:white;
       font-weight:600;
+      z-index: 70;
     }
 
-    /* Rest of your styles unchanged */
-    .page-wrap { display:flex; gap:20px; padding:20px; flex:1; }
-    .sidebar { width:240px; background:white; border-radius:10px; padding:12px; }
-    .sidebar a { display:block; padding:12px 14px; background:#f5f6f8; margin-bottom:10px; border-radius:8px; text-align:center; }
+    /* Layout wrapper */
+    .page-wrap {
+      display:flex;
+      gap:20px;
+      align-items:flex-start;
+      padding: 20px;
+      transition: padding-left .25s;
+      position: relative;
+      flex: 1 1 auto;
+    }
 
-    .user-panel { display:flex; justify-content:space-between; padding:10px; background:#fff; border-radius:8px; margin-bottom:12px; }
-    .name { font-weight:800; font-size:14px; }
-    .role { font-size:12px; }
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgba(15,35,60,0.06);
+      transform: translateX(-18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .28s ease, opacity .25s ease, width .2s ease, padding .2s ease;
+      z-index: 55;
+      position: relative;
+    }
+    .sidebar a {
+      display:block;
+      padding:12px 14px;
+      margin-bottom:10px;
+      border-radius:8px;
+      text-decoration:none;
+      color:#333;
+      background:#f5f6f8;
+      text-align:center;
+      font-weight:700;
+      transition: background .15s, color .15s;
+    }
+    .sidebar a:hover { background:#eef3ff; }
 
-    .logout-btn { background:#d23c37; color:white; padding:8px; border:none; border-radius:8px; cursor:pointer; }
+    /* Sidebar user panel (added) */
+    .sidebar .user-panel {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      margin-bottom:12px;
+      border-radius:8px;
+      background: linear-gradient(180deg,#f6f8ff,#ffffff);
+      border: 1px solid rgba(75,108,183,0.06);
+    }
+    .user-info { display:flex; flex-direction:column; min-width:0; }
+    .user-info .name { font-weight:800; color:#18304a; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .user-info .role { font-size:12px; color:#6b6b6b; font-weight:700; margin-top:2px; }
 
-    .main { flex:1; }
-    .container { background:white; padding:28px; border-radius:12px; }
-    .container h1 { text-align:center; font-size:34px; }
+    .sidebar .logout-btn {
+      padding:8px 12px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      color:white;
+      background: linear-gradient(180deg,#e25a57, #d23c37); /* red */
+      box-shadow: 0 8px 18px rgba(194,48,48,0.14);
+    }
+    .sidebar .logout-btn:active { transform: translateY(1px); }
 
-    .overview { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:22px; }
+    /* Active 'Dashboard' item uses the same color as header */
+    .sidebar a.active {
+      background: #4b6cb7; /* same as navbar */
+      color: white;
+      box-shadow: 0 6px 14px rgba(75,108,183,0.12);
+    }
 
-    .card { padding:20px; border-radius:12px; text-align:center; }
-    .departments { background:#e8f2ff; }
-    .students    { background:#e9fdf0; }
-    .professors  { background:#fff3e7; }
-    .hods        { background:#f6ecff; }
+    /* Main content area */
+    .main {
+      flex:1;
+      transition: margin-left .25s ease, width .25s ease, filter .25s ease, opacity .25s ease;
+      min-height: calc(100vh - 64px - 120px);
+    }
 
-    .app-footer { padding:16px; text-align:center; }
+    .container {
+      background: rgba(255,255,255,0.96);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 8px 28px rgba(13,40,90,0.06);
+      transition: box-shadow .2s, max-width .22s ease, margin .22s ease, background .22s ease, transform .2s ease;
+      backdrop-filter: none;
+    }
 
-    /* Modal CSS unchanged */
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; justify-content:center; align-items:center; }
-    .modal-box { background:white; padding:20px; border-radius:14px; width:430px; text-align:center; }
+    .container h1 {
+      text-align:center;
+      font-size:34px;
+      margin-bottom: 20px;
+      color:#222;
+      font-weight:800;
+    }
+
+    .overview {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 22px;
+      align-items:center;
+    }
+
+    /* Card base */
+    .card {
+      padding:20px 18px;
+      border-radius:12px;
+      text-align:center;
+      color:#001f3f;
+      box-shadow: 0 6px 18px rgba(13,40,90,0.04);
+    }
+    .card h3 { margin:0; color:#6b6b6b; font-size:14px; font-weight:700; }
+    .card p { font-size:28px; font-weight:800; margin-top:8px; color:#001f3f; }
+
+    /* Custom card colors to match screenshot */
+    .card.departments { background:#e8f2ff; }  /* light blue */
+    .card.students    { background:#e9fdf0; }  /* light green */
+    .card.professors  { background:#fff3e7; }  /* light peach */
+    .card.hods        { background:#f6ecff; }  /* light purple */
+
+    /* When sidebar is open: show sidebar and shrink main */
+    body.sidebar-open .sidebar {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* overlay effect: blur and transparency when menu open */
+    body.sidebar-open .main {
+      filter: blur(3px);
+      opacity: 0.35;
+      transition: all .25s ease-in-out;
+      pointer-events: none;
+    }
+
+    /* Also make container more transparent when sidebar open so background shows */
+    body.sidebar-open .main .container {
+      background: rgba(255,255,255,0.6);
+      box-shadow: 0 6px 20px rgba(13,40,90,0.04);
+    }
+
+    body.sidebar-open::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      z-index: 45;
+    }
+
+    /* when sidebar closed collapse it visually for full-width feel */
+    body:not(.sidebar-open) .sidebar {
+      transform: translateX(-28px);
+      opacity: 0;
+      pointer-events: none;
+      width: 0;
+      min-width: 0;
+      padding: 0;
+      margin-right: 0;
+    }
+
+    /* center the container horizontally and make it wide when sidebar hidden */
+    body:not(.sidebar-open) .main .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* when sidebar open make container shrink a bit to fit beside sidebar */
+    body.sidebar-open .main .container {
+      max-width: 940px;
+      margin-left: 12px;
+    }
+
+    /* Tiny interactions for menu button */
+    .menu-toggle.open .bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .menu-toggle.open .bars span:nth-child(2) { opacity: 0; }
+    .menu-toggle.open .bars span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* Responsive: on small screens, sidebar overlays instead of pushes */
+    @media (max-width: 900px) {
+      .page-wrap { padding: 12px; }
+      .sidebar {
+        position: absolute;
+        top: 78px;
+        left: 12px;
+        width: 260px;
+        min-width: 0;
+      }
+      body.sidebar-open .sidebar { z-index: 50; }
+      body.sidebar-open .main .container { max-width: calc(100% - 300px); margin-left: 300px; }
+      body:not(.sidebar-open) .main .container { max-width: 100%; margin: 0 auto; }
+      .navbar .title { font-size:18px; left:50%; transform:translateX(-50%); }
+    }
+
+    @media (max-width: 600px) {
+      .navbar { padding: 0 10px; }
+      .menu-toggle { width:40px; height:40px; }
+      .navbar .title { font-size:16px; left:50%; transform:translateX(-50%); max-width: 68%; }
+      .container { padding:18px; }
+      .container h1 { font-size:22px; }
+      .overview { gap:12px; }
+      .card p { font-size:22px; }
+      .sidebar { top:72px; left:10px; width:240px; }
+    }
+
+    @media (min-width:1300px) {
+      body:not(.sidebar-open) .main .container { max-width: 1400px; }
+      .container { padding:32px; }
+    }
+
+    /* ---------- Logout modal styles (screenshot-like) ---------- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .modal-box {
+      background: linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+      padding: 20px 26px;
+      border-radius: 14px;
+      width: 430px;
+      max-width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(2,12,40,0.35), 0 4px 18px rgba(2,12,40,0.12);
+      animation: popIn .18s cubic-bezier(.2,.9,.3,1);
+      border: 1px solid rgba(15,35,60,0.04);
+    }
+    .modal-box h3 {
+      font-size: 22px;
+      margin-bottom: 6px;
+      font-weight: 900;
+      color: #14202b;
+      line-height: 1.05;
+      letter-spacing: 0.2px;
+    }
+    .modal-box p {
+      margin: 0;
+      color: #46515a;
+      font-weight: 600;
+      margin-bottom: 18px;
+      font-size: 14px;
+    }
+    .modal-actions {
+      margin-top: 6px;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    /* Pill button look (No = red, Yes = green) - icons removed (text only) */
+    .btn-no, .btn-yes {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 22px;
+      border-radius: 28px;
+      color: white;
+      border: none;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 8px 20px rgba(8,20,40,0.08);
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+    }
+    .btn-no {
+      background: linear-gradient(180deg,#e25a57, #d23c37);
+      box-shadow: 0 10px 22px rgba(194, 48, 48, 0.18);
+    }
+
+    .btn-yes {
+      background: linear-gradient(180deg,#3bb26d, #2e9a3f);
+      box-shadow: 0 10px 22px rgba(46, 154, 63, 0.14);
+    }
+
+    .btn-no:active, .btn-yes:active { transform: translateY(1px) scale(.997); }
+    .btn-no:focus, .btn-yes:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(46, 154, 63, 0.12);
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(6px) scale(.995); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Footer */
+    .app-footer {
+      background: transparent;
+      padding: 16px 20px;
+      text-align: center;
+      color: #5b6b6b;
+      font-size: 13px;
+      border-top: 1px solid rgba(15,35,60,0.04);
+      flex-shrink: 0;
+    }
+    .footer-title {
+      font-weight: 800;
+      color: #222;
+      margin-bottom: 6px;
+    }
+    .footer-sub {
+      color: #6b6b6b;
+      margin-top: 6px;
+    }
+
+    /* Make the main content slightly inert for screen readers when modal open */
+    .inert {
+      pointer-events: none;
+      user-select: none;
+    }
+
   </style>
 </head>
 
-<body data-admin="<%= adminName %>">
-
-  <!-- NAVBAR -->
+<!-- pass server adminName into data attribute so client JS can update greeting + sidebar -->
+<body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>" data-admin="<%= adminName %>">
+  <!-- Navbar -->
   <div class="navbar">
-      <div id="menuBtn" class="menu-toggle">
-        <div class="bars"><span></span><span></span><span></span></div>
+    <!-- menu button always top-left -->
+    <div id="menuBtn" class="menu-toggle" aria-label="Toggle menu" title="Menu">
+      <div class="bars" aria-hidden="true">
+        <span></span><span></span><span></span>
       </div>
+    </div>
 
-      <div class="title">University Admin Dashboard</div>
+    <!-- centered title -->
+    <div class="title">University Admin Dashboard</div>
 
-      <div class="right">
-        <div id="greeting">Hello, <%= adminName %></div>
-      </div>
+    <div class="right">
+      <!-- only greeting remains on the right as requested -->
+      <div id="greeting" style="font-size:14px; opacity:0.95; margin-right:8px;">Hello, <%= adminName %></div>
+      <!-- removed top-right logout link per your request -->
+    </div>
   </div>
 
+  <!-- Page content -->
   <div class="page-wrap">
-    <nav class="sidebar" id="sidebar">
-      <div class="user-panel">
-        <div>
+    <!-- Sidebar (menu) - Professors & HODs removed -->
+    <nav class="sidebar" id="sidebar" aria-hidden="true">
+      <!-- User panel now inside the toggle/sidebar -->
+      <div class="user-panel" role="region" aria-label="User panel">
+        <div class="user-info">
           <div id="sidebarUserName" class="name"><%= adminName %></div>
           <div id="sidebarUserRole" class="role">Admin</div>
         </div>
-        <button id="sidebarLogoutBtn" class="logout-btn">Logout</button>
+
+        <!-- logout button sits here (red background) -->
+        <button id="sidebarLogoutBtn" class="logout-btn" type="button" aria-haspopup="dialog" aria-controls="logoutModal">Logout</button>
       </div>
 
       <a href="/admin/dashboard" class="active">Dashboard Overview</a>
@@ -128,36 +450,249 @@
       <a href="/admin/users">Users</a>
     </nav>
 
+    <!-- Main -->
     <main class="main" id="mainContent">
-      <div class="container">
+      <div class="container" role="main" aria-live="polite">
         <h1>Dashboard Overview</h1>
 
         <div class="overview">
-          <div class="card departments"><h3>Total Departments</h3><p><%= totalDepartments %></p></div>
-          <div class="card students"><h3>Total Students</h3><p><%= totalStudents %></p></div>
-          <div class="card professors"><h3>Total Professors</h3><p><%= totalProfessors %></p></div>
-          <div class="card hods"><h3>Total HODs</h3><p><%= totalHODs %></p></div>
+          <div class="card departments" role="article" aria-label="Total Departments">
+            <h3>Total Departments</h3>
+            <p><%= totalDepartments %></p>
+          </div>
+
+          <div class="card students" role="article" aria-label="Total Students">
+            <h3>Total Students</h3>
+            <p><%= totalStudents %></p>
+          </div>
+
+          <div class="card professors" role="article" aria-label="Total Professors">
+            <h3>Total Professors</h3>
+            <p><%= totalProfessors %></p>
+          </div>
+
+          <div class="card hods" role="article" aria-label="Total HODs">
+            <h3>Total HODs</h3>
+            <p><%= totalHODs %></p>
+          </div>
         </div>
       </div>
     </main>
   </div>
 
-  <footer class="app-footer">© <%= new Date().getFullYear() %> Your University</footer>
+  <!-- Footer with app info -->
+  <footer class="app-footer" role="contentinfo">
+    <div class="footer-title">University Management</div>
+    <div class="footer-sub">© <%= new Date().getFullYear() %> Your University</div>
+  </footer>
 
-  <!-- Modal -->
-  <div id="logoutModal" class="modal-overlay">
-    <div class="modal-box">
-      <h3>Are you sure you want to logout?</h3>
-      <p>This will end your session.</p>
-      <button id="cancelLogout" class="btn-no">No</button>
-      <button id="confirmLogout" class="btn-yes">Yes</button>
+  <!-- LOGOUT CONFIRMATION MODAL -->
+  <div id="logoutModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="logoutTitle" aria-modal="true">
+    <div class="modal-box" role="document" aria-describedby="logoutDesc">
+      <h3 id="logoutTitle">Are you sure you want to logout?</h3>
+      <p id="logoutDesc">This will end your session.</p>
+
+      <div class="modal-actions" role="group" aria-label="Logout choices">
+        <!-- No button (cancel) - icons removed -->
+        <button id="cancelLogout" class="btn-no" type="button">No</button>
+
+        <!-- Yes button (confirm) - icons removed -->
+        <button id="confirmLogout" class="btn-yes" type="button">Yes</button>
+      </div>
     </div>
   </div>
 
   <script>
-    // Greeting
-    document.getElementById("greeting").innerText = "Hello, <%= adminName %>";
-  </script>
+    // Toggle behavior: add/remove class to body (NO persistence - default closed)
+    (function() {
+      const menuBtn = document.getElementById('menuBtn');
+      const sidebar = document.getElementById('sidebar');
 
+      // Ensure initial state is closed
+      function setOpen(open) {
+        document.body.classList.toggle('sidebar-open', open);
+        menuBtn.classList.toggle('open', open);
+        sidebar.setAttribute('aria-hidden', !open);
+      }
+
+      // start closed by default (explicit)
+      setOpen(false);
+
+      // click toggles sidebar (open <-> close)
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setOpen(!document.body.classList.contains('sidebar-open'));
+      });
+
+      // close sidebar on ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
+          setOpen(false);
+        }
+      });
+
+      // click outside sidebar closes it when open
+      document.addEventListener('click', (e) => {
+        if (!document.body.classList.contains('sidebar-open')) return;
+        if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+          setOpen(false);
+        }
+      });
+    })();
+
+    // Setup greeting and sidebar user text from server-provided data attribute
+    (function() {
+      const body = document.body;
+      const rawAdmin = body.getAttribute('data-admin') || '';
+      // normalize and create display name
+      function toTitleCase(str) {
+        return str.split(' ').map(s => s ? (s[0].toUpperCase() + s.slice(1).toLowerCase()) : '').join(' ');
+      }
+
+      let displayName = rawAdmin.trim();
+      let roleText = '';
+
+      if (!displayName) {
+        displayName = 'Admin';
+        roleText = 'Admin';
+      } else {
+        // if the username contains 'admin' or looks like an admin email, show "Admin" as role
+        const lower = displayName.toLowerCase();
+        if (lower.includes('admin') || lower.includes('administrator')) {
+          roleText = 'Admin';
+          displayName = 'Admin';
+        } else {
+          // try to make pretty: if email, take before @
+          if (displayName.includes('@')) {
+            displayName = displayName.split('@')[0];
+          }
+          displayName = toTitleCase(displayName.replace('.', ' ').replace('_',' '));
+          roleText = 'Administrator';
+        }
+      }
+
+      // Update DOM
+      const greeting = document.getElementById('greeting');
+      const sidebarUserName = document.getElementById('sidebarUserName');
+      const sidebarUserRole = document.getElementById('sidebarUserRole');
+
+      if (greeting) greeting.textContent = `Hello, ${displayName}`;
+      if (sidebarUserName) sidebarUserName.textContent = displayName;
+      if (sidebarUserRole) sidebarUserRole.textContent = roleText;
+    })();
+
+    // LOGOUT modal functionality (enhanced)
+    (function() {
+      // logout trigger is now the sidebarLogoutBtn
+      const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+      const logoutModal = document.getElementById('logoutModal');
+      const cancelBtn = document.getElementById('cancelLogout');
+      const confirmBtn = document.getElementById('confirmLogout');
+      const mainContent = document.getElementById('mainContent');
+      let lastFocused = null;
+
+      // Focusable selectors for trap
+      const focusableSelectors = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+      function openModal() {
+        lastFocused = document.activeElement;
+        // show
+        logoutModal.style.display = 'flex';
+        logoutModal.setAttribute('aria-hidden', 'false');
+
+        // Prevent background scroll
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+
+        // visually mark main content as inert for screen readers / pointer events
+        mainContent.classList.add('inert');
+
+        // focus first action (cancel)
+        cancelBtn.focus();
+
+        // add event listeners for trap
+        document.addEventListener('keydown', handleKeyDown);
+        logoutModal.addEventListener('click', handleBackdropClick);
+      }
+
+      function closeModal() {
+        // hide
+        logoutModal.style.display = 'none';
+        logoutModal.setAttribute('aria-hidden', 'true');
+
+        // restore scroll
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+
+        mainContent.classList.remove('inert');
+
+        // restore focus
+        try {
+          if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+        } catch(e){}
+
+        // remove listeners
+        document.removeEventListener('keydown', handleKeyDown);
+        logoutModal.removeEventListener('click', handleBackdropClick);
+      }
+
+      function handleBackdropClick(e) {
+        // close when clicking the overlay outside the modal box
+        if (e.target === logoutModal) closeModal();
+      }
+
+      function handleKeyDown(e) {
+        if (e.key === 'Escape') {
+          // close modal on Escape
+          if (logoutModal.style.display === 'flex') {
+            e.preventDefault();
+            closeModal();
+            return;
+          }
+        }
+        // focus trap
+        if (e.key === 'Tab' && logoutModal.style.display === 'flex') {
+          const focusables = logoutModal.querySelectorAll(focusableSelectors);
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+      }
+
+      if (sidebarLogoutBtn) {
+        sidebarLogoutBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          openModal();
+        });
+      }
+
+      // No -> cancel
+      cancelBtn.addEventListener('click', () => {
+        closeModal();
+      });
+
+      // Yes -> go to /logout
+      confirmBtn.addEventListener('click', () => {
+        // navigate to logout endpoint
+        window.location.href = '/logout';
+      });
+
+      // Accessibility: if modal is shown by server-render, ensure correct aria states
+      if (logoutModal.getAttribute('aria-hidden') === 'false') {
+        openModal();
+      }
+    })();
+  </script>
 </body>
 </html>
