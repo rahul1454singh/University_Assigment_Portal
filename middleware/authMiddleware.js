@@ -12,6 +12,24 @@ async function getTokenPayload(req, res) {
     return null;
   }
 }
+// ADD THIS AT THE BOTTOM OF THE FILE
+
+exports.verifyProfessor = async (req, res, next) => {
+  const payload = await getTokenPayload(req, res);
+  if (!payload || payload.role !== "Professor") {
+    return res.redirect("/login");
+  }
+
+  const professor = await UserData.findById(payload.id).lean();
+  if (!professor) {
+    return res.redirect("/login");
+  }
+
+  req.professor = professor;
+  res.locals.professor = professor;
+  next();
+};
+
 
 exports.verifyAdmin = async (req, res, next) => {
   const payload = await getTokenPayload(req, res);

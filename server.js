@@ -13,6 +13,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const userRoutes = require("./routes/userRoutes");
 const studentRoutes = require("./routes/studentRoutes");
+const professorRoutes = require("./routes/professorRoutes");
 
 let departmentRoutes;
 const dRoute1 = path.join(__dirname, "routes", "departmentRoute.js");
@@ -53,6 +54,7 @@ const Admin = require("./models/Admin");
     app.use("/", departmentRoutes);
     app.use("/", userRoutes);
     app.use("/", studentRoutes);
+    app.use("/", professorRoutes);
 
     app.use((req, res, next) => {
       res.status(404);

@@ -4,206 +4,252 @@
   <meta charset="utf-8" />
   <title><%= assignment.title %> — Assignment Details</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <style>
-    body { font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#222;margin:0;padding:28px }
-    .wrap { max-width:900px;margin:0 auto;background:#fff;padding:22px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.04) }
-    h1{margin:0 0 10px}
-    .meta{margin:8px 0 16px;font-size:14px;color:#555}
-    .row{display:flex;justify-content:space-between;gap:12px;margin:12px 0;font-size:14px;align-items:center}
-    .label{font-weight:600;color:#555}
-    .status{display:inline-block;padding:6px 10px;border-radius:18px;font-weight:700;font-size:13px}
-    .s-approved{background:#e9f7ee;color:#177a3b}
-    .s-rejected{background:#fff0f0;color:#b22222}
-    .s-draft{background:#eef2ff;color:#2b3ea8}
-    .s-submitted{background:#f0fbf6;color:#1f7a5a}
-
-    a.btn { display:inline-block;margin-top:16px;padding:10px 16px;border-radius:8px;background:#3551a1;color:#fff;text-decoration:none;font-weight:700;border:none;cursor:pointer; }
-    a.file-link{color:#3551a1;font-weight:700;text-decoration:none;padding:8px 12px;border-radius:6px;background:#f5f7fb;display:inline-block}
-    .section { margin-top:12px; }
-    pre.description { background:#fbfbfb;padding:12px;border-radius:8px;white-space:pre-wrap }
-
-    .controls { margin-top:18px; display:flex; gap:10px; align-items:center; flex-wrap:wrap }
-    .select { padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-size:14px }
-    .btn-primary { padding:10px 14px;border-radius:8px;background:#1f7a5a;color:#fff;border:none;font-weight:700;cursor:pointer }
-    .btn-secondary { padding:10px 14px;border-radius:8px;background:#e0e6f6;color:#1f376a;border:none;font-weight:700;cursor:pointer }
-    .btn-edit { padding:10px 14px;border-radius:8px;background:#ff8a2b;color:#fff;border:none;font-weight:700;cursor:pointer; text-decoration:none; display:inline-block }
-    .muted { color:#777;font-size:13px }
-
-    /* disabled styles */
-    .select:disabled, .btn-primary:disabled, .btn-edit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f3f5f9;
+      color: #222;
+      margin: 0;
+      padding: 28px;
     }
 
-    @media (max-width:560px) {
-      .row { flex-direction:column; align-items:flex-start; gap:6px; }
-      .controls { flex-direction:column; align-items:stretch }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 22px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    }
+
+    h1 { margin: 0 0 10px; }
+
+    .meta {
+      margin: 8px 0 16px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 12px 0;
+      font-size: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .label {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 18px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .s-approved { background: #e9f7ee; color: #177a3b; }
+    .s-rejected { background: #fff0f0; color: #b22222; }
+    .s-draft { background: #eef2ff; color: #2b3ea8; }
+    .s-submitted { background: #f0fbf6; color: #1f7a5a; }
+
+    a.btn, button.btn {
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-back {
+      background: #3551a1;
+      color: #fff;
+    }
+
+    .btn-submit {
+      background: #2e9a3f; /* GREEN */
+      color: #fff;
+    }
+
+    .section {
+      margin-top: 16px;
+    }
+
+    pre.description {
+      background: #fbfbfb;
+      padding: 12px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+
+    select {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      min-width: 240px;
+    }
+
+    .submit-box {
+      background: #f5f7fb;
+      padding: 16px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    /* ✅ BUTTON ROW */
+    .action-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .action-row button,
+    .action-row a {
+      flex: 1;
+    }
+
+    .success-msg {
+      background: #e9f7ee;
+      color: #177a3b;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 14px;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .action-row {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap" role="main">
-    <h1><%= assignment.title %></h1>
-    <div class="meta">
-      Uploaded: <strong><%= assignment.createdAt ? new Date(assignment.createdAt).toLocaleString() : "-" %></strong>
-      <!-- Show user short: a short display (e.g. initials or short name). Server should provide `user` object. -->
-      <span style="margin-left:12px" class="muted">Signed in as: <strong><%= (user && (user.shortName || user.fullName || user.name)) ? (user.shortName || user.fullName || user.name) : '-' %></strong></span>
-    </div>
+<div class="wrap">
+  <h1><%= assignment.title %></h1>
 
-    <div class="row">
-      <div style="flex:1">
-        <div class="label">Category</div>
-        <div><%= assignment.category || "-" %></div>
-      </div>
-
-      <div style="flex:1">
-        <div class="label">Status</div>
-        <div>
-          <% if (assignment.status === 'Approved') { %>
-            <span class="status s-approved">Approved</span>
-          <% } else if (assignment.status === 'Rejected') { %>
-            <span class="status s-rejected">Rejected</span>
-          <% } else if (assignment.status === 'Draft') { %>
-            <span class="status s-draft">Draft</span>
-          <% } else { %>
-            <span class="status s-submitted"><%= assignment.status %></span>
-          <% } %>
-        </div>
-      </div>
-
-      <div style="flex:1;text-align:right">
-        <div class="label">Reviewer</div>
-        <div><%= assignment.reviewerName || "-" %></div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div style="flex:1">
-        <div class="label">File</div>
-        <div style="margin-top:6px;">
-          <% if (assignment.file && assignment.file.path) { %>
-            <a href="<%= assignment.file.path %>" class="file-link" target="_blank" rel="noopener">Open PDF</a>
-            <a href="<%= assignment.file.path %>" download class="file-link" style="margin-left:8px">Download</a>
-          <% } else { %>
-            -
-          <% } %>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label">Description</div>
-      <pre class="description"><%= assignment.description || "-" %></pre>
-    </div>
-
-    <!-- Controls: shown when assignment is in Draft state -->
-    <div class="controls" id="submitControls">
-      <% /*
-        Server must provide `professors` array when rendering this page. Each professor must be an object:
-          { _id: '...', fullName: 'Prof Fullname', name: '...' }
-        Only professors from the student's department should be passed in (filter on server-side).
-        The select will display only fullName (no email).
-      */ %>
-
-      <% if (assignment.status === 'Draft') { %>
-        <label for="profSelect" class="muted">Select your professor</label>
-
-        <% 
-          // defensive: ensure professors is an array; if model uses `name` instead of `fullName` fallback
-          const profsAvailable = (typeof professors !== 'undefined' && Array.isArray(professors) && professors.length > 0);
-        %>
-
-        <select id="profSelect" name="reviewerId" class="select" aria-label="Select professor" <%= profsAvailable ? '' : 'disabled' %>>
-          <option value=""><%= profsAvailable ? '-- Select Professor --' : '-- No professors available --' %></option>
-          <% if (profsAvailable) { %>
-            <% professors.forEach(function(p) { %>
-              <option value="<%= p._id %>"><%= p.fullName || p.name || (p.displayName) || 'Unnamed Professor' %></option>
-            <% }) %>
-          <% } %>
-        </select>
-
-        <button id="submitForReviewBtn" class="btn-primary" <%= profsAvailable ? '' : 'disabled' %>>Submit for Review</button>
-
-        <!-- Edit button: given a distinct visible background -->
-        <a href="/student/assignments/<%= assignment._id %>/edit" id="editBtn" class="btn-edit">Edit Assignment</a>
-      <% } else { %>
-        <div class="muted">This assignment is not editable.</div>
-      <% } %>
-
-      <a href="/student/assignments" class="btn" style="margin-left:auto">Back to Assignments</a>
-    </div>
-
-    <script>
-      (function(){
-        // Client-side behavior for Submit for Review
-        const submitBtn = document.getElementById('submitForReviewBtn');
-        const profSelect = document.getElementById('profSelect');
-        const editBtn = document.getElementById('editBtn');
-
-        if (!submitBtn) return; // nothing to do if control isn't present
-
-        submitBtn.addEventListener('click', async function (e) {
-          e.preventDefault();
-
-          const reviewerId = profSelect && profSelect.value ? profSelect.value : '';
-          if (!reviewerId) {
-            alert('Please select a professor to review your assignment.');
-            return;
-          }
-
-          const confirmation = confirm('Are you sure you want to submit this assignment for review? You will not be able to edit it after submission.');
-          if (!confirmation) return;
-
-          // Disable UI while submitting
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Submitting...';
-          if (editBtn) editBtn.style.display = 'none';
-
-          try {
-            const resp = await fetch('/student/assignments/<%= assignment._id %>/submit', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({ reviewerId })
-            });
-
-            if (!resp.ok) {
-              // try parse json error
-              let errText = await resp.text();
-              try { const j = JSON.parse(errText); errText = j.message || JSON.stringify(j); } catch(e){}
-              throw new Error(errText || ('Server returned ' + resp.status));
-            }
-
-            const data = await resp.json();
-
-            // On success: update UI to reflect new status and disable editing
-            alert(data.message || 'Assignment submitted successfully.');
-
-            // Replace status badge text and classes (simple, based on markup above)
-            const statusEl = document.querySelector('.status');
-            if (statusEl) {
-              statusEl.textContent = 'Submitted';
-              statusEl.className = 'status s-submitted';
-            }
-
-            // Hide submit controls so student cannot edit after submission
-            const controls = document.getElementById('submitControls');
-            if (controls) {
-              controls.innerHTML = '<div class="muted">Assignment submitted — editing disabled.</div><a href="/student/assignments" class="btn" style="margin-left:auto">Back to Assignments</a>';
-            }
-
-          } catch (err) {
-            console.error(err);
-            alert('Could not submit assignment: ' + (err.message || err));
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit for Review';
-            if (editBtn) editBtn.style.display = 'inline-block';
-          }
-        });
-      })();
-    </script>
+  <div class="meta">
+    Uploaded:
+    <strong><%= assignment.createdAt ? new Date(assignment.createdAt).toLocaleString() : "-" %></strong>
   </div>
+
+  <div class="row">
+    <div>
+      <div class="label">Category</div>
+      <div><%= assignment.category || "-" %></div>
+    </div>
+
+    <div>
+      <div class="label">Status</div>
+      <% if (assignment.status === 'Approved') { %>
+        <span class="status s-approved">Approved</span>
+      <% } else if (assignment.status === 'Rejected') { %>
+        <span class="status s-rejected">Rejected</span>
+      <% } else if (assignment.status === 'Draft') { %>
+        <span class="status s-draft">Draft</span>
+      <% } else { %>
+        <span class="status s-submitted">Submitted</span>
+      <% } %>
+    </div>
+
+    <div>
+      <div class="label">Reviewer</div>
+      <div><%= assignment.reviewerName || "-" %></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Description</div>
+    <pre class="description"><%= assignment.description || "-" %></pre>
+  </div>
+
+  <!-- ================= SUBMIT FOR REVIEW ================= -->
+  <% if (assignment.status === 'Draft') { %>
+    <div class="submit-box">
+      <div class="label">Select Professor</div>
+
+      <select id="reviewerSelect">
+        <option value="">-- Select Professor --</option>
+        <% professors.forEach(p => { %>
+          <option value="<%= p._id %>"><%= p.fullName || p.name %></option>
+        <% }) %>
+      </select>
+
+      <!-- ✅ BUTTONS SAME ROW -->
+      <div class="action-row">
+        <button class="btn btn-submit" id="submitBtn">
+          Submit for Review
+        </button>
+
+        <a href="/student/assignments" class="btn btn-back">
+          Back to Assignments
+        </a>
+      </div>
+
+      <div class="success-msg" id="successMsg">
+        ✅ Assignment submitted successfully. You can go back using the button above.
+      </div>
+    </div>
+  <% } else { %>
+    <div class="section">
+      <a href="/student/assignments" class="btn btn-back">Back to Assignments</a>
+    </div>
+  <% } %>
+
+</div>
+
+<script>
+  const submitBtn = document.getElementById("submitBtn");
+  const reviewerSelect = document.getElementById("reviewerSelect");
+  const successMsg = document.getElementById("successMsg");
+
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async () => {
+      const reviewerId = reviewerSelect.value;
+
+      if (!reviewerId) {
+        alert("Please select a professor.");
+        return;
+      }
+
+      const ok = confirm("Are you sure you want to submit this assignment for review?");
+      if (!ok) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+
+      const res = await fetch("/student/assignments/<%= assignment._id %>/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewerId })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        successMsg.style.display = "block";
+        reviewerSelect.disabled = true;
+        submitBtn.textContent = "Submitted";
+      } else {
+        alert(data.message || "Submission failed");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit for Review";
+      }
+    });
+  }
+</script>
+
 </body>
 </html>

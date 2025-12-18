@@ -559,6 +559,69 @@ router.post("/student/assignments/:id/delete", verifyStudent, async (req, res) =
     return res.status(500).json({ success: false, message: "Server error" });
   }
 });
+// 🔹 RESUBMIT REJECTED ASSIGNMENT
+router.post(
+  "/student/assignments/:id/resubmit",
+  verifyStudent,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const userId = req.user._id;
+      const assignment = await Assignment.findOne({
+        _id: req.params.id,
+        user: userId,
+        status: "Rejected"
+      });
+
+      if (!assignment) {
+        return res.status(404).send("Assignment not found or not rejected");
+      }
+
+      // 🔹 Save old submission into history
+      assignment.history.push({
+        file: assignment.file,
+        description: assignment.description,
+        submittedAt: assignment.submittedAt
+      });
+
+      // 🔹 Update description
+      assignment.description = req.body.description || assignment.description;
+
+      // 🔹 Replace file ONLY if new file uploaded
+      if (req.file) {
+        assignment.file = {
+          filename: req.file.filename,
+          originalname: req.file.originalname,
+          path: `/uploads/${req.file.filename}`,
+          size: req.file.size,
+          mimetype: req.file.mimetype
+        };
+      }
+
+      assignment.status = "Submitted";
+      assignment.submittedAt = new Date();
+
+      await assignment.save();
+
+      // 🔹 Notify original reviewer
+      try {
+        const Notification = require("../models/Notification");
+        await Notification.create({
+          userId: assignment.reviewerId,
+          title: "Assignment Resubmitted",
+          message: `Student has resubmitted "${assignment.title}"`,
+          assignmentId: assignment._id
+        });
+      } catch (e) {}
+
+      return res.redirect(`/student/assignments/${assignment._id}`);
+    } catch (err) {
+      console.error("Resubmit error:", err);
+      return res.status(500).send("Server error");
+    }
+  }
+);
+
 
 // ASSIGNMENT DETAILS
 router.get("/student/assignments/:id", verifyStudent, async (req, res) => {
@@ -594,5 +657,7 @@ router.get("/student/assignments/:id", verifyStudent, async (req, res) => {
     return res.status(500).send("Error loading assignment");
   }
 });
+
+
 
 module.exports = router;
