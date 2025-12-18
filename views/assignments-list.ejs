@@ -23,11 +23,9 @@
     .s-submitted { background: #fff3d4; color: #177a3b; }
 
     .action-btn { padding: 6px 12px; border-radius: 6px; font-weight: 700; margin-right: 8px; border: none; text-decoration: none; display: inline-block; font-size: 14px; }
-    .view-file-btn { background: #6c757d; color: #fff; }
     .edit-btn { background: #2b7be4; color: #fff; }
     .delete-btn { background: #e74c3c; color: #fff; }
 
-    /* prevent actions area triggering row click */
     td.actions { white-space: nowrap; }
 
     /* modal */
@@ -62,14 +60,13 @@
           <th>Title</th>
           <th>Category</th>
           <th>Status</th>
-          <th>File</th>
           <th>Uploaded</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <% if (!assignments || assignments.length === 0) { %>
-          <tr><td colspan="6">No assignments yet.</td></tr>
+          <tr><td colspan="5">No assignments yet.</td></tr>
         <% } else { %>
           <% assignments.forEach(a => { %>
             <tr onclick="openDetails('<%= a._id %>')">
@@ -87,26 +84,15 @@
                 <% } %>
               </td>
 
-              <td>
-                <% if (a.file && a.file.path) { %>
-                  <a href="<%= a.file.path %>" target="_blank" class="action-btn view-file-btn" onclick="event.stopPropagation()">View</a>
-                <% } else { %>
-                  -
-                <% } %>
-              </td>
-
               <td><%= a.createdAt ? new Date(a.createdAt).toLocaleString() : "-" %></td>
 
               <td class="actions" onclick="event.stopPropagation()">
                 <% if (a.status !== 'Submitted') { %>
-                  <!-- if not submitted -> direct edit link -->
                   <a href="/student/assignments/<%= a._id %>/edit" class="action-btn edit-btn">Edit</a>
                 <% } else { %>
-                  <!-- if submitted -> open modal with details (stays on list) -->
-                  <!-- Passing title as a parameter to avoid relying on DOM traversal -->
                   <button 
-                    class="action-btn edit-btn" 
-                    onclick="openSubmittedModal(event, '<%= a._id %>', '<%= (a.title || '').replace(/'/g, '\\\'').replace(/\\/g, '\\\\') %>', '<%= (a.file && a.file.originalname) ? a.file.originalname.replace(/'/g, '\\\'').replace(/\\/g, '\\\\') : '' %>', '<%= (a.reviewerName ? a.reviewerName : '-') .replace(/'/g, '\\\'').replace(/\\/g, '\\\\') %>', '<%= (a.category ? a.category : '-') .replace(/'/g, '\\\'').replace(/\\/g, '\\\\') %>', '<%= a.createdAt ? new Date(a.createdAt).toLocaleString() : '-' %>')"
+                    class="action-btn edit-btn"
+                    onclick="openSubmittedModal(event, '<%= a._id %>', '<%= a.title %>', '<%= a.reviewerName || '-' %>', '<%= a.category || '-' %>', '<%= a.createdAt ? new Date(a.createdAt).toLocaleString() : '-' %>')"
                   >Edit</button>
                 <% } %>
 
@@ -119,18 +105,16 @@
     </table>
   </div>
 
-  <!-- Modal shown when Edit clicked for already-submitted assignments -->
-  <div id="submittedModal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal" role="document" aria-labelledby="modalTitle">
-      <h3 id="modalTitle">Cannot edit — assignment already submitted</h3>
-      <p>This assignment has already been submitted and cannot be edited or modified. See file details below:</p>
+  <!-- Modal -->
+  <div id="submittedModal" class="modal-overlay">
+    <div class="modal">
+      <h3>Cannot edit — assignment already submitted</h3>
+      <p>This assignment has already been submitted and cannot be edited.</p>
 
-      <div class="meta-list" id="modalMeta">
-        <!-- details populated by JS -->
-      </div>
+      <div class="meta-list" id="modalMeta"></div>
 
       <div class="modal-actions">
-        <button id="modalCancel" class="btn-cancel" type="button">Cancel</button>
+        <button class="btn-cancel" onclick="closeSubmittedModal()">Cancel</button>
       </div>
     </div>
   </div>
@@ -145,80 +129,28 @@
       fetch(`/student/assignments/${id}/delete`, { method: "POST" })
         .then(r => r.json())
         .then(json => {
-          if (!json.success) return alert(json.message || "Delete failed");
-          location.reload();
-        })
-        .catch(() => alert("Error deleting assignment"));
+          if (!json.success) alert(json.message || "Delete failed");
+          else location.reload();
+        });
     }
 
-    // modal logic
     const modalOverlay = document.getElementById('submittedModal');
     const modalMeta = document.getElementById('modalMeta');
-    const modalCancel = document.getElementById('modalCancel');
 
-    // openSubmittedModal now accepts (evt, id, title, filename, reviewerName, category, uploaded)
-    function openSubmittedModal(evt, id, title, filename, reviewerName, category, uploaded) {
-      // prevent row navigation
+    function openSubmittedModal(evt, id, title, reviewer, category, uploaded) {
       evt.stopPropagation();
-      evt.preventDefault();
-
-      title = title || '-';
-      filename = filename || '-';
-      reviewerName = reviewerName || '-';
-      category = category || '-';
-      uploaded = uploaded || '-';
-
-      // Populate modal meta
       modalMeta.innerHTML = `
-        <div><strong>Title:</strong> ${escapeHtml(title)}</div>
-        <div><strong>File:</strong> ${escapeHtml(filename)}</div>
-        <div><strong>Reviewer:</strong> ${escapeHtml(reviewerName)}</div>
-        <div><strong>Category:</strong> ${escapeHtml(category)}</div>
-        <div><strong>Uploaded:</strong> ${escapeHtml(uploaded)}</div>
+        <div><strong>Title:</strong> ${title}</div>
+        <div><strong>Reviewer:</strong> ${reviewer}</div>
+        <div><strong>Category:</strong> ${category}</div>
+        <div><strong>Uploaded:</strong> ${uploaded}</div>
       `;
-
-      // show modal
       modalOverlay.classList.add('open');
-      modalOverlay.setAttribute('aria-hidden', 'false');
-
-      // focus cancel for accessibility
-      modalCancel.focus();
     }
-
-    // close modal when cancel clicked (do not navigate away)
-    modalCancel.addEventListener('click', () => {
-      closeSubmittedModal();
-    });
 
     function closeSubmittedModal() {
       modalOverlay.classList.remove('open');
-      modalOverlay.setAttribute('aria-hidden', 'true');
-      // return focus to document body (or you could try to focus the previous button)
-      document.activeElement && document.activeElement.blur();
     }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    // close modal if clicking outside or pressing Esc
-    modalOverlay.addEventListener('click', (e) => {
-      // if clicked the overlay (not the modal box)
-      if (e.target === modalOverlay) {
-        closeSubmittedModal();
-      }
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modalOverlay.classList.contains('open')) {
-        closeSubmittedModal();
-      }
-    });
   </script>
 </body>
 </html>
