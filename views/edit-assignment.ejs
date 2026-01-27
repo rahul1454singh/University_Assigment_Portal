@@ -6,181 +6,207 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{
-      --bg: #f3f5f9;
-      --card: #fff;
-      --muted: #666;
-      --accent: #3551a1;
-      --accent-strong: #2d4e98;
-      --muted-btn: #555;
-      --danger: #d9534f;
-      --radius: 10px;
-      --shadow: 0 10px 30px rgba(0,0,0,0.04);
-      --gap: 12px;
+      --bg:#f3f5f9;
+      --card:#fff;
+      --muted:#666;
+      --accent:#3551a1;
+      --muted-btn:#555;
+      --danger:#d9534f;
+      --radius:10px;
+      --shadow:0 10px 30px rgba(0,0,0,0.04);
     }
 
-    /* Page layout */
-    html, body { height: 100%; }
-    body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: var(--bg);
-      color: #222;
-      margin: 0;
-      padding: 28px;
-      -webkit-font-smoothing:antialiased;
+    body{
+      font-family:"Segoe UI",Arial,sans-serif;
+      background:var(--bg);
+      margin:0;
+      padding:28px;
     }
-    .wrap {
-      max-width: 760px;
-      margin: 0 auto;
-      background: var(--card);
-      padding: 22px;
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-    }
-    h1 { margin: 0 0 10px; font-size: 28px; }
 
-    /* Form controls */
-    label { display:block; margin-top:16px; font-weight:700; color:#444; }
-    input[type="text"],
-    textarea,
-    select,
-    input[type="file"] {
+    .wrap{
+      max-width:760px;
+      margin:auto;
+      background:var(--card);
+      padding:22px;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    h1{margin:0 0 12px;font-size:26px}
+
+    label{display:block;margin-top:16px;font-weight:700}
+    input,textarea,select{
       width:100%;
       padding:10px 12px;
+      margin-top:8px;
       border-radius:8px;
       border:1px solid #e6e9ee;
-      margin-top:8px;
-      box-sizing:border-box;
       font-size:14px;
-      background: #fff;
-      color: #222;
     }
-    textarea { min-height:120px; resize:vertical; }
+    textarea{min-height:120px}
 
-    .muted { color: var(--muted); font-size:13px; margin-top:8px; display:inline-block; vertical-align:middle; }
+    .msg-error{background:#fff0f0;color:#8b1d1d;padding:10px;border-radius:8px;margin-bottom:12px}
+    .msg-success{background:#eaf0ff;color:#0b2b66;padding:10px;border-radius:8px;margin-bottom:12px}
 
-    /* Alerts */
-    .msg-error { background:#fff0f0; color:#8b1d1d; padding:10px; border-radius:8px; margin-bottom:12px; border:1px solid rgba(200,30,30,0.08) }
-    .msg-success { background:#eaf0ff; color:#0b2b66; padding:10px; border-radius:8px; margin-bottom:12px; border:1px solid rgba(53,81,161,0.12) }
+    .muted{color:var(--muted);font-size:13px;margin-top:10px}
 
-    /* File row - prevents overflow */
-    .file-row {
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-top:8px;
-      flex-wrap:wrap;
-    }
-    .file-row .view-btn {
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
+    .file-row{display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap}
+    .file-row a{
       padding:8px 12px;
       border-radius:8px;
-      background:#fff;
-      color:var(--accent);
-      font-weight:800;
       border:1px solid #e6e9ee;
+      background:#fff;
       text-decoration:none;
-      box-shadow:0 4px 10px rgba(53,81,161,0.04);
-      white-space:nowrap;
-    }
-    .file-row .view-btn:hover { background:#fbfcff; }
-    .file-row .filename {
-      color:var(--muted);
-      font-size:14px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      max-width: calc(100% - 150px); /* leave space for button; helps prevent overflow */
+      font-weight:700;
+      color:var(--accent);
     }
 
-    /* Actions */
-    .actions { margin-top:18px; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
-    .btn { padding:10px 14px; border-radius:8px; text-decoration:none; background:var(--muted-btn); color:#fff; font-weight:700; border:0; cursor:pointer; display:inline-block; }
-    .btn.ghost { background:#fff; color:var(--muted-btn); border:1px solid #e6e9ee; }
-    .btn.save { background:var(--accent); box-shadow: 0 6px 18px rgba(53,81,161,0.12); color:#fff; }
-    .btn.cancel { background:#777; color:#fff; }
-    .file-input { padding:6px 8px; }
-
-    /* Small screens */
-    @media (max-width:760px) {
-      .wrap{padding:16px;}
-      h1{font-size:22px;}
-      .file-row .filename { max-width:100%; white-space:normal; }
-      .actions { justify-content:stretch; }
-      .btn { width:100%; text-align:center; }
-      .actions .btn + .btn { margin-top:8px; }
+    .actions{
+      margin-top:18px;
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
     }
 
-    /* Very small screens - stack form nicely */
-    @media (max-width:420px) {
-      body { padding:14px; }
-      .wrap { padding:14px; border-radius:8px; }
-      label { margin-top:12px; }
-      textarea { min-height:100px; }
+    .btn{
+      padding:10px 14px;
+      border-radius:8px;
+      border:0;
+      cursor:pointer;
+      font-weight:700;
+      display:inline-block;
+      text-decoration:none;
     }
 
-    /* utility */
-    .inline-note { font-size:13px; color:var(--muted); margin-top:8px; display:block; }
+    .btn.save{background:var(--accent);color:#fff}
+    .btn.cancel{
+      background:#777;
+      color:#fff;
+      text-decoration:none;
+    }
+
+    .btn.cancel:hover,
+    .btn.cancel:focus,
+    .btn.cancel:active{
+      text-decoration:none;
+    }
+
+    @media(max-width:600px){
+      .btn{width:100%}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Edit Assignment</h1>
 
-    <% if (error) { %>
-      <div class="msg-error"><%= error %></div>
-    <% } %>
-    <% if (success) { %>
-      <div class="msg-success"><%= success %></div>
-    <% } %>
+<div class="wrap">
+  <h1>Edit Assignment</h1>
 
-    <% if (assignment.status && assignment.status !== 'Draft') { %>
-      <div class="muted">This assignment has been submitted and cannot be edited.</div>
-      <div style="margin-top:14px;">
-        <a href="/student/assignments/<%= assignment._id %>" class="btn ghost">Back to Assignment</a>
-      </div>
-    <% } else { %>
+  <% if (error) { %>
+    <div class="msg-error"><%= error %></div>
+  <% } %>
 
-      <form method="post" action="/student/assignments/<%= assignment._id %>/edit" enctype="multipart/form-data" novalidate>
-        <label for="title">Title</label>
-        <input id="title" name="title" type="text" value="<%= assignment.title %>" required />
+  <% if (success) { %>
+    <div class="msg-success"><%= success %></div>
+  <% } %>
 
-        <label for="description">Description</label>
-        <textarea id="description" name="description" rows="6"><%= assignment.description || '' %></textarea>
+  <!-- 🔴 REJECTION MESSAGE (ONLY FOR REJECTED) -->
+  <% if (assignment.status === 'Rejected') { %>
+    <div class="msg-error">
+      <strong>Rejected:</strong>
+      <%= assignment.rejectionRemarks || 'Please review the feedback and resubmit.' %>
+    </div>
+  <% } %>
 
-        <label for="category">Category</label>
-        <select id="category" name="category" required>
-          <option value="Assignment" <%= assignment.category === 'Assignment' ? 'selected' : '' %>>Assignment</option>
-          <option value="Thesis" <%= assignment.category === 'Thesis' ? 'selected' : '' %>>Thesis</option>
-          <option value="Report" <%= assignment.category === 'Report' ? 'selected' : '' %>>Report</option>
-        </select>
+  <!-- 🚫 LOCKED STATES -->
+  <% if (assignment.status === 'Submitted' || assignment.status === 'Approved') { %>
+    <div class="muted">This assignment cannot be edited.</div>
+    <div style="margin-top:14px">
+      <a href="/student/assignments/<%= assignment._id %>" class="btn cancel">Back</a>
+    </div>
 
-        <label>Current file</label>
+  <% } else { %>
 
-        <% if (assignment.file && assignment.file.path) { %>
-          <div class="file-row" role="group" aria-label="Current file">
-            <a class="view-btn" href="<%= assignment.file.path %>" target="_blank" rel="noopener">View PDF</a>
-            <span class="filename" title="<%= assignment.file.originalname %>"><%= assignment.file.originalname %></span>
-            <span class="muted" style="margin-left:auto; min-width:120px; text-align:right;"><%= assignment.file.size ? (Math.round(assignment.file.size / 1024) + ' KB') : '' %></span>
-          </div>
-        <% } else { %>
-          <div class="muted">No file uploaded</div>
-        <% } %>
+    <!-- ✅ EDIT / RESUBMIT FORM -->
+    <form
+      id="editForm"
+      method="post"
+      action="<%= assignment.status === 'Rejected'
+        ? '/student/assignments/' + assignment._id + '/resubmit'
+        : '/student/assignments/' + assignment._id + '/edit' %>"
+      enctype="multipart/form-data"
+    >
 
-        <label for="newFile">Replace file (PDF only, max 10MB)</label>
-        <input id="newFile" class="file-input" name="newFile" type="file" accept="application/pdf" />
+      <label>Title</label>
+      <input type="text" name="title" value="<%= assignment.title %>" required>
 
-        <div class="inline-note">Allowed: PDF. Max size: 10MB.</div>
+      <label>Description</label>
+      <textarea name="description"><%= assignment.description || '' %></textarea>
 
-        <div class="actions">
-          <!-- changed Cancel to go back to the assignments list -->
-          <a href="/student/assignments" class="btn cancel">Cancel</a>
-          <button type="submit" class="btn save">Save Changes</button>
+      <label>Category</label>
+      <select name="category" required>
+        <option value="Assignment" <%= assignment.category==='Assignment'?'selected':'' %>>Assignment</option>
+        <option value="Thesis" <%= assignment.category==='Thesis'?'selected':'' %>>Thesis</option>
+        <option value="Report" <%= assignment.category==='Report'?'selected':'' %>>Report</option>
+      </select>
+
+      <label>Current File</label>
+      <% if (assignment.file && assignment.file.path) { %>
+        <div class="file-row">
+          <a href="<%= assignment.file.path %>" target="_blank">View PDF</a>
+          <span class="muted"><%= assignment.file.originalname %></span>
         </div>
-      </form>
-    <% } %>
-  </div>
+      <% } else { %>
+        <div class="muted">No file uploaded</div>
+      <% } %>
+
+      <label>
+        <%= assignment.status === 'Rejected'
+          ? 'Upload new file (optional)'
+          : 'Replace file (optional)' %>
+      </label>
+      <input type="file" name="file" accept="application/pdf">
+
+      <div class="muted">PDF only, max 10MB.</div>
+
+      <div class="actions">
+        <a href="/student/assignments" class="btn cancel">Cancel</a>
+
+        <button type="submit" class="btn save">
+          <%= assignment.status === 'Rejected'
+            ? 'Resubmit Assignment'
+            : 'Save Changes' %>
+        </button>
+      </div>
+    </form>
+
+  <% } %>
+</div>
+
+<!-- ✅ RESUBMIT SUCCESS HANDLER -->
+<script>
+  const form = document.getElementById("editForm");
+
+  if (form && form.action.includes("/resubmit")) {
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const res = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Your resubmitted assignment has been sent to your professor.");
+        window.location.href = "/student/assignments";
+      } else {
+        alert(data.message || "Resubmission failed");
+      }
+    });
+  }
+</script>
+
 </body>
 </html>

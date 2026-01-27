@@ -7,6 +7,7 @@ const fs = require("fs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
+
 const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
@@ -14,6 +15,8 @@ const adminRoutes = require("./routes/adminRoutes");
 const userRoutes = require("./routes/userRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const professorRoutes = require("./routes/professorRoutes");
+
+/* ===================== DEPARTMENT ROUTE AUTO-DETECT ===================== */
 
 let departmentRoutes;
 const dRoute1 = path.join(__dirname, "routes", "departmentRoute.js");
@@ -24,14 +27,13 @@ if (fs.existsSync(dRoute1)) {
 } else if (fs.existsSync(dRoute2)) {
   departmentRoutes = require("./routes/departmentRoutes");
 } else {
-  console.error("ERROR: Could not find department route file. Expected one of:");
-  console.error(" - routes/departmentRoute.js");
-  console.error(" - routes/departmentRoutes.js");
-  console.error("Please create one of those files or update server.js to point to the correct path.");
+  console.error("Department route not found");
   process.exit(1);
 }
 
 const Admin = require("./models/Admin");
+
+/* ===================== START SERVER ===================== */
 
 (async () => {
   try {
@@ -39,16 +41,19 @@ const Admin = require("./models/Admin");
 
     const app = express();
 
+    /* ===== BODY PARSERS ===== */
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
     app.use(cookieParser());
 
+    /* ===== VIEW ENGINE ===== */
     app.set("views", path.join(__dirname, "views"));
     app.set("view engine", "ejs");
 
-    // app.use(express.static(path.join(__dirname, "public")));
-    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+    /* ===== STATIC FILES ===== */
+    app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+    /* ===== ROUTES ===== */
     app.use("/", authRoutes);
     app.use("/", adminRoutes);
     app.use("/", departmentRoutes);
@@ -56,43 +61,49 @@ const Admin = require("./models/Admin");
     app.use("/", studentRoutes);
     app.use("/", professorRoutes);
 
-    app.use((req, res, next) => {
+    /* ===== 404 HANDLER ===== */
+    app.use((req, res) => {
       res.status(404);
-      if (req.accepts("json")) return res.json({ message: "Not Found" });
-      return res.send("404 - Not Found");
+      if (req.xhr || req.headers.accept?.includes("application/json")) {
+        return res.json({ message: "Not Found" });
+      }
+      res.send("404 - Not Found");
     });
 
+    /* ===== GLOBAL ERROR HANDLER (SAFE) ===== */
     app.use((err, req, res, next) => {
       console.error("Unhandled error:", err);
       res.status(500);
-      if (req.accepts("json")) return res.json({ message: "Server error" });
-      return res.send("500 - Server error");
-    });
 
-    const port = process.env.PORT || 3000;
-    const server = app.listen(port, async () => {
-      try {
-        const adminExists = await Admin.findOne({ email: "admin@university.com" });
-        if (!adminExists) {
-          const hashed = await bcrypt.hash("admin", 10);
-          await Admin.create({
-            name: "Admin",
-            email: "admin@university.com",
-            password: hashed,
-            role: "admin"
-          });
-          console.log("Default admin created: admin@university.com (password: admin)");
-        }
-        console.log(`Server running at http://localhost:${port}`);
-      } catch (err) {
-        console.error("Error creating default admin:", err);
+      if (req.xhr || req.headers.accept?.includes("application/json")) {
+        return res.json({ message: "Server error" });
       }
+
+      res.send("500 - Server error");
     });
 
-    server.on("error", (err) => {
-      console.error("Server error:", err);
-      process.exit(1);
+    /* ===== START SERVER ===== */
+    const port = process.env.PORT || 3000;
+
+    app.listen(port, async () => {
+      const adminExists = await Admin.findOne({
+        email: "admin@university.com"
+      });
+
+      if (!adminExists) {
+        const hashed = await bcrypt.hash("admin", 10);
+        await Admin.create({
+          name: "Admin",
+          email: "admin@university.com",
+          password: hashed,
+          role: "admin"
+        });
+        console.log("Default admin created");
+      }
+
+      console.log(`Server running at http://localhost:${port}`);
     });
+
   } catch (err) {
     console.error("Startup failed:", err);
     process.exit(1);

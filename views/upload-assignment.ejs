@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <title>Upload Assignment</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <style>
     :root{
       --bg:#f3f5f9;
@@ -17,58 +18,128 @@
       --pad:20px;
       --shadow:0 10px 30px rgba(0,0,0,0.06);
     }
-    *{box-sizing:border-box}
+
+    * { box-sizing: border-box; }
+
     body{
       font-family: "Segoe UI", Arial, sans-serif;
-      background:var(--bg);
-      margin:0;
-      padding:40px 16px;
-      display:flex;
-      justify-content:center;
+      background: var(--bg);
+      margin: 0;
+      padding: 40px 16px;
+      display: flex;
+      justify-content: center;
     }
+
     .container{
-      width:100%;
-      max-width:var(--max-width);
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:var(--pad);
-      box-shadow:var(--shadow);
+      width: 100%;
+      max-width: var(--max-width);
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: var(--pad);
+      box-shadow: var(--shadow);
     }
+
     .header-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    h1{margin:0;font-size:28px}
-    .row{display:flex;gap:14px;margin-bottom:12px}
-    label{font-weight:600;color:var(--muted);font-size:14px;margin-bottom:6px;display:block}
-    .col{flex:1}
+
+    h1{
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .row{
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .col{
+      flex: 1;
+      min-width: 200px;
+    }
+
+    label{
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
     input, textarea, select{
-      width:100%;
-      padding:10px 12px;
-      border-radius:8px;
-      border:1px solid #e6e9ee;
-      font-size:14px;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #e6e9ee;
+      font-size: 14px;
+      font-family: inherit;
     }
-    textarea{min-height:110px}
+
+    textarea{
+      min-height: 110px;
+      resize: vertical;
+    }
+
     .actions{
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: 10px;
     }
+
     .btn{
-      padding:10px 16px;
-      border-radius:8px;
-      color:#fff;
-      font-weight:700;
-      border:none;
-      cursor:pointer;
-      text-decoration:none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
     }
-    .btn-back{background:var(--back)}
-    .btn-upload{background:var(--accent)}
-    .btn-bulk{background:var(--bulk)}
+
+    .btn-back{
+      background: var(--back);
+    }
+
+    .btn-upload{
+      background: var(--accent);
+    }
+
+    .btn-bulk{
+      background: var(--bulk);
+    }
+
+    .msg-error{
+      background: #ffe6e6;
+      color: #c0392b;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .msg-success{
+      background: #e9f7ee;
+      color: #177a3b;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 600px){
+      h1 { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
@@ -77,10 +148,20 @@
 
   <div class="header-row">
     <h1>Upload Assignment</h1>
-    <a href="/student/assignments/bulk-upload" class="btn btn-bulk">Bulk Upload</a>
+    <a href="/student/assignments/bulk-upload" class="btn btn-bulk">
+      Bulk Upload
+    </a>
   </div>
 
-  <form action="/student/assignments/upload" method="post" enctype="multipart/form-data">
+  <% if (error) { %>
+    <div class="msg-error"><%= error %></div>
+  <% } %>
+
+  <% if (success) { %>
+    <div class="msg-success"><%= success %></div>
+  <% } %>
+
+  <form action="/student/assignments/upload" method="POST" enctype="multipart/form-data">
 
     <div class="row">
       <div class="col">
@@ -96,19 +177,22 @@
       </div>
     </div>
 
-    <!-- ✅ NEW: PROFESSOR SELECT -->
+    <!-- PROFESSOR SELECT (SAFE) -->
     <div class="row">
       <div class="col">
         <label>Professor</label>
         <select name="professor" required>
           <option value="">Select Professor</option>
-          <% professors.forEach(function(prof){ %>
-            <option value="<%= prof.id %>"><%= prof.name %></option>
-          <% }) %>
+          <% if (professors && professors.length) { %>
+            <% professors.forEach(prof => { %>
+              <option value="<%= prof._id %>">
+                <%= prof.fullName || prof.name %>
+              </option>
+            <% }) %>
+          <% } %>
         </select>
       </div>
     </div>
-    <!-- ✅ END -->
 
     <div class="row">
       <div class="col">
@@ -129,11 +213,16 @@
     </div>
 
     <div class="actions">
-      <a href="/student/dashboard" class="btn btn-back">Back to Dashboard</a>
-      <button class="btn btn-upload">Upload</button>
+      <a href="/student/dashboard" class="btn btn-back">
+        Back to Dashboard
+      </a>
+      <button type="submit" class="btn btn-upload">
+        Upload
+      </button>
     </div>
 
   </form>
+
 </div>
 
 </body>

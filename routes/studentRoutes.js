@@ -1,221 +1,299 @@
-// routes/studentRoutes.js
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
-const bcrypt = require("bcryptjs");
+
 const { verifyStudent } = require("../middleware/authMiddleware");
 const Assignment = require("../models/Assignment");
 const User = require("../models/UserData");
-const Department = require("../models/Department");
+
 const router = express.Router();
 
-/* ================= UPLOAD SETUP ================= */
+/* ===================== UPLOAD SETUP ===================== */
+
 const uploadDir = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
-    const safe = file.originalname
-      .replace(/\s+/g, "_")
-      .replace(/[^a-zA-Z0-9_.-]/g, "");
+    const safe = file.originalname.replace(/\s+/g, "_");
     cb(null, `${Date.now()}_${safe}`);
   }
 });
 
+function fileFilter(req, file, cb) {
+  if (file.mimetype === "application/pdf") cb(null, true);
+  else cb(new Error("Only PDF files allowed"));
+}
+
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) =>
-    file.mimetype === "application/pdf"
-      ? cb(null, true)
-      : cb(new Error("Only PDF files allowed"))
+  fileFilter
 });
 
-/* ================= HELPER ================= */
-async function loadDashboardData(userId) {
+/* ===================== DASHBOARD ===================== */
+
+router.get("/student/dashboard", verifyStudent, async (req, res) => {
+  const userId = req.user._id;
+
   const agg = await Assignment.aggregate([
     { $match: { user: userId } },
     { $group: { _id: "$status", count: { $sum: 1 } } }
   ]);
+
   const counts = { Draft: 0, Submitted: 0, Approved: 0, Rejected: 0 };
-  agg.forEach(i => counts[i._id] = i.count);
+  agg.forEach(i => (counts[i._id] = i.count));
 
   const recent = await Assignment.find({ user: userId })
     .sort({ createdAt: -1 })
     .limit(5)
     .lean();
 
-  return { counts, recent };
-}
-
-/* ================= DASHBOARD ================= */
-router.get("/student/dashboard", verifyStudent, async (req, res) => {
-  try {
-    const { counts, recent } = await loadDashboardData(req.user._id);
-    return res.render("student-dashboard", { user: req.user, counts, recent });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send("Error loading dashboard");
-  }
+  res.render("student-dashboard", { counts, recent, user: req.user });
 });
 
-/* ================= PROFILE ================= */
+/* ===================== PROFILE ===================== */
+
 router.get("/student/profile", verifyStudent, async (req, res) => {
-  try {
-    let user = await User.findById(req.user._id)
-      .populate("department")
-      .lean();
-    if (user?.department?.name) user.departmentName = user.department.name;
-    return res.render("student-profile", { user });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send("Error loading profile");
-  }
+  const user = await User.findById(req.user._id)
+    .populate("department")
+    .lean();
+
+  user.departmentName = user.department?.name || "";
+  res.render("student-profile", { user });
 });
 
-/* ================= ASSIGNMENT LIST ================= */
+/* ===================== ASSIGNMENTS LIST ===================== */
+
 router.get("/student/assignments", verifyStudent, async (req, res) => {
-  try {
-    const assignments = await Assignment.find({ user: req.user._id })
-      .sort({ createdAt: -1 })
-      .lean();
-    return res.render("assignments-list", { assignments, user: req.user });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send("Error loading assignments");
-  }
+  const assignments = await Assignment.find({ user: req.user._id })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.render("assignments-list", { assignments, user: req.user });
 });
 
-/* ================= UPLOAD FORM ================= */
+/* ===================== UPLOAD PAGE ===================== */
+
 router.get("/student/assignments/upload", verifyStudent, async (req, res) => {
-  try {
-    const student = await User.findById(req.user._id).lean();
-    let professors = [];
-    if (student?.department) {
-      professors = await User.find({
-        role: "Professor",
-        department: student.department
-      }).select("_id fullName name").lean();
-    }
+  const professors = await User.find({ role: "Professor" })
+    .select("_id name fullName")
+    .lean();
 
-    return res.render("upload-assignment", {
-      error: null,
-      success: null,
-      assignmentId: null,
-      professors,
-      user: req.user
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send("Error loading upload page");
-  }
+  res.render("upload-assignment", {
+    error: null,
+    success: null,
+    professors
+  });
 });
 
-/* ================= SINGLE UPLOAD ================= */
+/* ===================== UPLOAD POST ===================== */
+
 router.post(
   "/student/assignments/upload",
   verifyStudent,
   upload.single("file"),
   async (req, res) => {
+    const professors = await User.find({ role: "Professor" })
+      .select("_id name fullName")
+      .lean();
+
+    if (!req.file) {
+      return res.render("upload-assignment", {
+        error: "Upload PDF file",
+        success: null,
+        professors
+      });
+    }
+
+    const assignment = new Assignment({
+      title: req.body.title,
+      description: req.body.description,
+      category: req.body.category,
+      reviewer: req.body.professor,
+      user: req.user._id,
+      status: "Draft",
+      file: {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        path: `/uploads/${req.file.filename}`,
+        size: req.file.size
+      }
+    });
+
+    await assignment.save();
+
+    res.render("upload-assignment", {
+      success: "Uploaded successfully",
+      error: null,
+      professors
+    });
+  }
+);
+
+/* ===================== BULK UPLOAD PAGE ===================== */
+
+router.get("/student/assignments/bulk-upload", verifyStudent, async (req, res) => {
+  const professors = await User.find({ role: "Professor" })
+    .select("_id name fullName")
+    .lean();
+
+  res.render("bulk-upload", {
+    professors,
+    error: null
+  });
+});
+
+/* ===================== BULK UPLOAD POST ===================== */
+
+router.post("/student/assignments/bulk-upload", verifyStudent, async (req, res) => {
+  const professors = await User.find({ role: "Professor" })
+    .select("_id name fullName")
+    .lean();
+
+  res.render("bulk-upload", {
+    professors,
+    error: "Bulk upload feature is coming soon. Please upload assignments one by one."
+  });
+});
+
+/* ===================== EDIT ASSIGNMENT (DRAFT + REJECTED) ===================== */
+
+router.get("/student/assignments/:id/edit", verifyStudent, async (req, res) => {
+  const assignment = await Assignment.findOne({
+    _id: req.params.id,
+    user: req.user._id,
+    status: { $in: ["Draft", "Rejected"] }
+  }).lean();
+
+  if (!assignment) {
+    return res.status(403).send("This assignment cannot be edited");
+  }
+
+  const professors = await User.find({ role: "Professor" })
+    .select("_id name fullName")
+    .lean();
+
+  res.render("edit-assignment", {
+    assignment,
+    professors,
+    user: req.user,
+    error: null,
+    success: null
+  });
+});
+
+/* ===================== SAVE EDIT (DRAFT + REJECTED) ===================== */
+
+router.post(
+  "/student/assignments/:id/edit",
+  verifyStudent,
+  upload.single("file"),
+  async (req, res) => {
     try {
-      if (!req.file) {
-        return res.render("upload-assignment", {
-          error: "Please upload a PDF file (max 10MB).",
-          success: null,
-          assignmentId: null
-        });
-      }
-
-      const { title, description, category, professor } = req.body;
-
-      if (!title || !category) {
-        fs.unlinkSync(req.file.path);
-        return res.render("upload-assignment", {
-          error: "Title and Category are required.",
-          success: null,
-          assignmentId: null
-        });
-      }
-
-      const saved = await new Assignment({
-        title,
-        description,
-        category,
+      const assignment = await Assignment.findOne({
+        _id: req.params.id,
         user: req.user._id,
-        status: "Draft",
-        reviewerId: professor,
-        file: {
+        status: { $in: ["Draft", "Rejected"] }
+      });
+
+      if (!assignment) {
+        return res.status(403).send("This assignment cannot be edited");
+      }
+
+      assignment.title = req.body.title;
+      assignment.description = req.body.description;
+      assignment.category = req.body.category;
+
+      if (req.file) {
+        assignment.file = {
           filename: req.file.filename,
           originalname: req.file.originalname,
           path: `/uploads/${req.file.filename}`,
-          size: req.file.size,
-          mimetype: req.file.mimetype
-        }
-      }).save();
+          size: req.file.size
+        };
+      }
 
-      return res.render("upload-assignment", {
-        error: null,
-        success: "Your assignment has been uploaded successfully.",
-        assignmentId: saved._id
+      await assignment.save();
+      res.redirect("/student/assignments");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Server error");
+    }
+  }
+);
+
+/* ===================== SUBMIT ASSIGNMENT FOR REVIEW (✅ ADDED) ===================== */
+
+router.post(
+  "/student/assignments/:id/submit",
+  verifyStudent,
+  async (req, res) => {
+    try {
+      const { reviewerId } = req.body;
+
+      if (!reviewerId) {
+        return res.json({
+          success: false,
+          message: "Reviewer is required"
+        });
+      }
+
+      const assignment = await Assignment.findOne({
+        _id: req.params.id,
+        user: req.user._id,
+        status: { $in: ["Draft", "Rejected"] }
+      });
+
+      if (!assignment) {
+        return res.json({
+          success: false,
+          message: "This assignment cannot be submitted"
+        });
+      }
+
+      assignment.status = "Submitted";
+      assignment.reviewer = reviewerId;
+
+      await assignment.save();
+
+      res.json({
+        success: true,
+        message: "Your assignment is submitted for review"
       });
     } catch (err) {
       console.error(err);
-      return res.status(500).render("upload-assignment", {
-        error: "Server error while uploading.",
-        success: null,
-        assignmentId: null
+      res.status(500).json({
+        success: false,
+        message: "Server error"
       });
     }
   }
 );
 
-/* =====================================================
-   ✅ FIXED PART STARTS HERE
-   EDIT ROUTE MUST COME BEFORE :id ROUTE
-===================================================== */
+/* ===================== DETAILS (ALWAYS LAST) ===================== */
 
-// EDIT ASSIGNMENT (GET) — FIXED ORDER
-router.get("/student/assignments/:id/edit", verifyStudent, async (req, res) => {
-  try {
-    const assignment = await Assignment.findOne({
-      _id: req.params.id,
-      user: req.user._id
-    }).lean();
-
-    if (!assignment) return res.status(404).send("Assignment not found");
-
-    return res.render("edit-assignment", {
-      assignment,
-      error: null,
-      success: null,
-      user: req.user
-    });
-  } catch (err) {
-    console.error("Edit error:", err);
-    return res.status(500).send("Error loading edit page");
-  }
-});
-
-/* ================= ASSIGNMENT DETAILS ================= */
 router.get("/student/assignments/:id", verifyStudent, async (req, res) => {
-  try {
-    const assignment = await Assignment.findOne({
-      _id: req.params.id,
-      user: req.user._id
-    }).lean();
+  const assignment = await Assignment.findOne({
+    _id: req.params.id,
+    user: req.user._id
+  }).lean();
 
-    if (!assignment) return res.status(404).send("Assignment not found");
-
-    return res.render("assignment-details", {
-      assignment,
-      user: req.user
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send("Error loading assignment");
+  if (!assignment) {
+    return res.status(404).send("Assignment not found");
   }
+
+  const professors = await User.find({ role: "Professor" })
+    .select("_id name fullName")
+    .lean();
+
+  res.render("assignment-details", {
+    assignment,
+    user: req.user,
+    professors
+  });
 });
 
 module.exports = router;
