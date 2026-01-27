@@ -9,26 +9,23 @@
       --bg:#f3f5f9;
       --card:#ffffff;
       --muted:#666;
-      --accent:#3551a1; /* upload button color */
-      --back:#555;       /* back button color */
-      --bulk:#07bd07;    /* bulk upload button color (green) */
+      --accent:#3551a1;
+      --back:#555;
+      --bulk:#07bd07;
       --radius:10px;
       --max-width:760px;
       --pad:20px;
       --shadow:0 10px 30px rgba(0,0,0,0.06);
     }
-
     *{box-sizing:border-box}
     body{
       font-family: "Segoe UI", Arial, sans-serif;
       background:var(--bg);
-      color:#222;
       margin:0;
       padding:40px 16px;
       display:flex;
       justify-content:center;
     }
-
     .container{
       width:100%;
       max-width:var(--max-width);
@@ -37,214 +34,107 @@
       padding:var(--pad);
       box-shadow:var(--shadow);
     }
-
-    /* HEADER ROW: title left, bulk button right */
     .header-row{
       display:flex;
       justify-content:space-between;
       align-items:center;
-      gap:12px;
       margin-bottom:18px;
     }
-
-    h1{
-      margin:0;
-      font-size:28px;
-      letter-spacing:0.2px;
-      text-align:left;
-      color:#111;
-    }
-
-    form{display:block}
-
-    .row{
-      display:flex;
-      gap:14px;
-      margin-bottom:12px;
-      align-items:flex-start;
-    }
-
-    label{
-      display:block;
-      font-weight:600;
-      color:var(--muted);
-      font-size:14px;
-      margin-bottom:6px;
-    }
-
-    .col{
-      flex:1;
-      min-width:0;
-    }
-
-    input[type="text"],
-    textarea,
-    select{
+    h1{margin:0;font-size:28px}
+    .row{display:flex;gap:14px;margin-bottom:12px}
+    label{font-weight:600;color:var(--muted);font-size:14px;margin-bottom:6px;display:block}
+    .col{flex:1}
+    input, textarea, select{
       width:100%;
       padding:10px 12px;
       border-radius:8px;
       border:1px solid #e6e9ee;
-      background:#fff;
       font-size:14px;
-      outline:none;
     }
-
-    textarea{min-height:110px; resize:vertical}
-
-    .file-row{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:16px;
-      flex-wrap:wrap;
-    }
-
-    .help{
-      font-size:13px;
-      color:var(--muted);
-      margin-bottom:8px;
-    }
-
+    textarea{min-height:110px}
     .actions{
       display:flex;
       gap:10px;
       justify-content:flex-end;
-      margin-top:8px;
-      flex-wrap:wrap;
     }
-
     .btn{
-      display:inline-block;
       padding:10px 16px;
       border-radius:8px;
       color:#fff;
-      text-decoration:none;
       font-weight:700;
       border:none;
       cursor:pointer;
-      text-align:center;
-      min-width:140px;
+      text-decoration:none;
     }
-
-    .btn-back{
-      background:var(--back);
-    }
-
-    .btn-upload{
-      background:var(--accent);
-    }
-
-    .btn-bulk{
-      background:var(--bulk);
-    }
-
-    .btn-bulk:hover{
-      filter:brightness(0.95);
-    }
-
-    .msg{
-      border-radius:8px;
-      padding:12px 14px;
-      margin-bottom:12px;
-      font-weight:600;
-    }
-
-    .msg-success{
-      background:#eaf0ff;
-      color:#0b2b66;
-      border:1px solid rgba(53,81,161,0.12);
-    }
-
-    .msg-error{
-      background:#fff0f0;
-      color:#8b1d1d;
-      border:1px solid rgba(200,30,30,0.08);
-    }
-
-    .meta{
-      margin-top:8px;
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    @media (max-width:600px){
-      .header-row{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:8px;
-      }
-      .actions{
-        flex-direction:column-reverse;
-        align-items:stretch;
-      }
-      .btn{width:100%}
-    }
-   
+    .btn-back{background:var(--back)}
+    .btn-upload{background:var(--accent)}
+    .btn-bulk{background:var(--bulk)}
   </style>
 </head>
 <body>
-  <div class="container" role="main">
 
-    <!-- Title left, bulk button right (same line) -->
-    <div class="header-row">
-      <h1>Upload Assignment</h1>
-      <a href="/student/assignments/bulk-upload" class="btn btn-bulk" title="Upload multiple assignments">
-        Bulk Upload
-      </a>
+<div class="container">
+
+  <div class="header-row">
+    <h1>Upload Assignment</h1>
+    <a href="/student/assignments/bulk-upload" class="btn btn-bulk">Bulk Upload</a>
+  </div>
+
+  <form action="/student/assignments/upload" method="post" enctype="multipart/form-data">
+
+    <div class="row">
+      <div class="col">
+        <label>Title</label>
+        <input type="text" name="title" required>
+      </div>
     </div>
 
-    <% if (error) { %>
-      <div class="msg msg-error" role="alert"><%= error %></div>
-    <% } %>
-
-    <% if (success) { %>
-      <div class="msg msg-success" role="status">
-        Your assignment has been uploaded.
-        <% if (assignmentId) { %>
-          <div class="meta">Assignment ID: <strong><%= assignmentId %></strong></div>
-        <% } %>
+    <div class="row">
+      <div class="col">
+        <label>Description</label>
+        <textarea name="description"></textarea>
       </div>
-    <% } %>
+    </div>
 
-    <form action="/student/assignments/upload" method="post" enctype="multipart/form-data" novalidate>
-      <div class="row">
-        <div class="col">
-          <label for="title">Title</label>
-          <input id="title" name="title" type="text" required value="<%= typeof title !== 'undefined' ? title : '' %>" />
-        </div>
+    <!-- ✅ NEW: PROFESSOR SELECT -->
+    <div class="row">
+      <div class="col">
+        <label>Professor</label>
+        <select name="professor" required>
+          <option value="">Select Professor</option>
+          <% professors.forEach(function(prof){ %>
+            <option value="<%= prof.id %>"><%= prof.name %></option>
+          <% }) %>
+        </select>
       </div>
+    </div>
+    <!-- ✅ END -->
 
-      <div class="row">
-        <div class="col">
-          <label for="description">Description</label>
-          <textarea id="description" name="description"><%= typeof description !== 'undefined' ? description : '' %></textarea>
-        </div>
+    <div class="row">
+      <div class="col">
+        <label>Category</label>
+        <select name="category">
+          <option value="Assignment">Assignment</option>
+          <option value="Thesis">Thesis</option>
+          <option value="Report">Report</option>
+        </select>
       </div>
+    </div>
 
-      <div class="row">
-        <div style="min-width:220px">
-          <label for="category">Category</label>
-          <select id="category" name="category" required>
-            <option value="Assignment" <%= (typeof category !== 'undefined' && category==='Assignment') ? 'selected' : '' %>>Assignment</option>
-            <option value="Thesis" <%= (typeof category !== 'undefined' && category==='Thesis') ? 'selected' : '' %>>Thesis</option>
-            <option value="Report" <%= (typeof category !== 'undefined' && category==='Report') ? 'selected' : '' %>>Report</option>
-          </select>
-        </div>
+    <div class="row">
+      <div class="col">
+        <label>File (PDF only)</label>
+        <input type="file" name="file" accept="application/pdf" required>
       </div>
+    </div>
 
-      <div class="file-row">
-        <div style="flex:1">
-          <label for="file">File (PDF only, max 10MB)</label>
-          <input id="file" name="file" type="file" accept="application/pdf" required />
-        </div>
-      </div>
+    <div class="actions">
+      <a href="/student/dashboard" class="btn btn-back">Back to Dashboard</a>
+      <button class="btn btn-upload">Upload</button>
+    </div>
 
-      <div class="actions">
-        <a href="/student/dashboard" class="btn btn-back" title="Back to dashboard">Back to Dashboard</a>
-        <button type="submit" class="btn btn-upload">Upload</button>
-      </div>
-    </form>
-  
-  </div>
+  </form>
+</div>
+
 </body>
 </html>
