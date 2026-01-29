@@ -74,7 +74,7 @@ body.sidebar-open .sidebar{left:0}
   box-shadow:0 12px 30px rgba(0,0,0,.1);
 }
 
-/* USER PANEL (WITH LOGOUT) */
+/* USER PANEL */
 .user-panel{
   background:#f6f8ff;
   padding:12px;
@@ -106,7 +106,7 @@ body.sidebar-open .sidebar{left:0}
   font-weight:700;
   text-decoration:none;
   color:#222;
-  cursor:pointer; /* ✅ cursor pointer */
+  cursor:pointer;
 }
 .sidebar a:hover{background:#e9ecf5}
 .sidebar a.active{background:#4b6cb7;color:white}
@@ -193,6 +193,55 @@ th{background:#f3f5f9}
   background:#2e9a3f;
   cursor:pointer;
 }
+
+/* ========================= */
+/* ✅ LOGOUT CONFIRM MODAL */
+/* ========================= */
+.logout-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:200;
+}
+
+.logout-modal{
+  background:white;
+  padding:26px;
+  border-radius:14px;
+  width:360px;
+  text-align:center;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+
+.logout-modal h2{
+  font-size:20px;
+  margin-bottom:6px;
+}
+
+.logout-modal p{
+  color:#666;
+  margin-bottom:18px;
+}
+
+.logout-actions{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+}
+
+.logout-actions button{
+  border:none;
+  padding:8px 20px;
+  border-radius:20px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.btn-no{background:#e25a57;color:white}
+.btn-yes{background:#2e9a3f;color:white}
 </style>
 </head>
 
@@ -211,7 +260,6 @@ th{background:#f3f5f9}
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-card">
 
-    <!-- USER + LOGOUT -->
     <div class="user-panel">
       <strong><%= professorName %></strong>
       <button id="logoutBtn" class="logout-btn">Logout</button>
@@ -227,7 +275,6 @@ th{background:#f3f5f9}
 <main class="main">
   <div class="container">
 
-    <!-- DASHBOARD VIEW -->
     <div id="dashboardView">
       <h1>Professor Dashboard</h1>
 
@@ -251,7 +298,6 @@ th{background:#f3f5f9}
       </div>
     </div>
 
-    <!-- REVIEWS VIEW -->
     <div id="reviewsView" style="display:none">
       <h1>My Reviews</h1>
       <table>
@@ -278,9 +324,8 @@ th{background:#f3f5f9}
               </span>
             </td>
             <td>
-              <a class="btn"
-                 href="/professor/assignments/<%= a._id %>/review">
-                 Review
+              <a class="btn" href="/professor/assignments/<%= a._id %>/review">
+                Review
               </a>
             </td>
           </tr>
@@ -291,6 +336,18 @@ th{background:#f3f5f9}
 
   </div>
 </main>
+
+<!-- ✅ LOGOUT MODAL -->
+<div id="logoutOverlay" class="logout-overlay">
+  <div class="logout-modal">
+    <h2>Are you sure you want to logout?</h2>
+    <p>This will end your session.</p>
+    <div class="logout-actions">
+      <button class="btn-no" id="cancelLogout">No</button>
+      <button class="btn-yes" id="confirmLogout">Yes</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const menuBtn = document.getElementById("menuBtn");
@@ -330,8 +387,20 @@ navReviews.onclick = () => {
   document.body.classList.remove("sidebar-open");
 };
 
-/* LOGOUT */
+/* ✅ CUSTOM LOGOUT CONFIRM */
+const logoutOverlay = document.getElementById("logoutOverlay");
+const cancelLogout = document.getElementById("cancelLogout");
+const confirmLogout = document.getElementById("confirmLogout");
+
 logoutBtn.onclick = () => {
+  logoutOverlay.style.display = "flex";
+};
+
+cancelLogout.onclick = () => {
+  logoutOverlay.style.display = "none";
+};
+
+confirmLogout.onclick = () => {
   window.location.href = "/logout";
 };
 </script>

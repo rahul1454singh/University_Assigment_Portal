@@ -1,11 +1,16 @@
 const mongoose = require("mongoose");
 
-const ProfessorSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  phone: String,
   password: { type: String, required: true },
-  department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" }
+  phone: { type: String },
+  role: { type: String, enum: ["Student", "Professor", "HOD"], default: "Student" },
+  department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
+
+  //  password reset
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
 });
 
-module.exports = mongoose.model("Professor", ProfessorSchema);
+module.exports = mongoose.models.UserData || mongoose.model("UserData", userSchema);
