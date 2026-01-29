@@ -6,18 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 
 <style>
-/* ===== RESET ===== */
+/* RESET */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 
-/* ===== BODY ===== */
 body{
   font-family:"Segoe UI",sans-serif;
   background:linear-gradient(135deg,#e9f0ff,#f3f5f9);
-  color:#222;
 }
 
-/* ===== NAVBAR ===== */
+/* NAVBAR */
 .navbar{
   background:#4b6cb7;
   height:64px;
@@ -29,73 +27,54 @@ body{
   z-index:100;
 }
 
-/* ===== TOGGLE BUTTON (ADMIN STYLE) ===== */
+/* MENU BUTTON */
 .menu-toggle{
   width:44px;height:44px;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;border-radius:8px;
-  transition:background .15s;
+  cursor:pointer;
+  border-radius:8px;
 }
-.menu-toggle:hover{background:rgba(255,255,255,.08)}
+.menu-toggle:hover{background:rgba(255,255,255,.1)}
 
 .bars{display:flex;flex-direction:column;gap:6px}
 .bars span{
   width:20px;height:2.6px;
   background:white;border-radius:2px;
-  transition:.25s;
 }
 
-/* toggle animation */
-.menu-toggle.open .bars span:nth-child(1){
-  transform:translateY(6px) rotate(45deg)
-}
-.menu-toggle.open .bars span:nth-child(2){
-  opacity:0
-}
-.menu-toggle.open .bars span:nth-child(3){
-  transform:translateY(-6px) rotate(-45deg)
-}
-
-/* ===== NAV TITLE ===== */
+/* TITLE */
 .navbar .title{
   position:absolute;
   left:50%;transform:translateX(-50%);
   color:#fff;font-weight:800;font-size:20px;
 }
 
-/* ===== NAV RIGHT ===== */
+/* RIGHT TEXT */
 .navbar .right{
   margin-left:auto;
   color:white;
   font-weight:600;
 }
 
-/* ===== SIDEBAR (TRANSPARENT CONTAINER) ===== */
+/* SIDEBAR */
 .sidebar{
   position:fixed;
   top:64px;
   left:-260px;
   width:260px;
-  height:auto;                 /* 🔥 content height only */
-  background:transparent;      /* 🔥 transparent below card */
-  padding:0;
-  box-shadow:none;
   transition:left .25s ease;
   z-index:90;
 }
-
-/* sidebar open */
 body.sidebar-open .sidebar{left:0}
 
-/* ===== SIDEBAR CARD (WHITE PART ONLY) ===== */
 .sidebar-card{
   background:white;
   padding:14px;
   border-radius:14px;
-  box-shadow:0 12px 30px rgba(0,0,0,.10);
+  box-shadow:0 12px 30px rgba(0,0,0,.1);
 }
 
-/* ===== USER PANEL ===== */
+/* USER PANEL (WITH LOGOUT) */
 .user-panel{
   background:#f6f8ff;
   padding:12px;
@@ -116,7 +95,7 @@ body.sidebar-open .sidebar{left:0}
   cursor:pointer;
 }
 
-/* ===== SIDEBAR LINKS ===== */
+/* SIDEBAR LINKS */
 .sidebar a{
   display:block;
   padding:12px;
@@ -127,19 +106,17 @@ body.sidebar-open .sidebar{left:0}
   font-weight:700;
   text-decoration:none;
   color:#222;
-   cursor:pointer;
+  cursor:pointer; /* ✅ cursor pointer */
 }
 .sidebar a:hover{background:#e9ecf5}
 .sidebar a.active{background:#4b6cb7;color:white}
 
-/* ===== MAIN ===== */
+/* MAIN */
 .main{
   margin-top:64px;
   padding:24px;
   transition:.25s;
 }
-
-/* blur + dim content when sidebar open */
 body.sidebar-open .main{
   margin-left:260px;
   filter:blur(3px);
@@ -147,28 +124,25 @@ body.sidebar-open .main{
   pointer-events:none;
 }
 
-/* blue overlay background (ADMIN STYLE) */
+/* OVERLAY */
 body.sidebar-open::before{
   content:"";
   position:fixed;
   inset:0;
-  background:rgba(75,108,183,.25); /* bluish overlay */
+  background:rgba(75,108,183,.25);
   z-index:45;
 }
 
-/* ===== CONTAINER ===== */
+/* CONTAINER */
 .container{
   max-width:1100px;
   margin:auto;
   background:white;
   border-radius:14px;
   padding:28px;
-  box-shadow:0 10px 30px rgba(0,0,0,.06);
 }
 
-/* ===== DASHBOARD ===== */
-h1{margin-bottom:20px}
-
+/* DASHBOARD CARDS */
 .overview{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
@@ -190,77 +164,35 @@ h1{margin-bottom:20px}
 .card h3{font-size:14px;color:#666}
 .card p{font-size:30px}
 
-/* ===== TABLE ===== */
+/* TABLE */
 table{width:100%;border-collapse:collapse}
-th,td{padding:12px;border-bottom:1px solid #ddd}
+th,td{
+  padding:12px;
+  border-bottom:1px solid #ddd;
+  text-align:center;
+}
 th{background:#f3f5f9}
 
+/* BADGES */
 .badge{
   padding:4px 12px;
   border-radius:14px;
   color:white;
   font-weight:700;
-  font-size:12px;
 }
-.badge.green{background:#2e9a3f}
 .badge.blue{background:#4b6cb7}
+.badge.green{background:#2e9a3f}
 
-.btn-group{display:flex;gap:8px}
+/* BUTTON */
 .btn{
   padding:6px 14px;
   border-radius:6px;
-  font-size:13px;
   font-weight:700;
   color:white;
   text-decoration:none;
-}
-.btn.review{background:#2e9a3f}
-.btn.view{background:#4b6cb7}
-
-/* ===== LOGOUT MODAL (ADMIN SAME) ===== */
-.modal-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:2000;
-}
-
-.modal-box{
-  background:white;
-  padding:22px 26px;
-  border-radius:14px;
-  width:420px;
-  text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
-}
-
-.modal-box h3{font-size:22px;margin-bottom:6px}
-.modal-box p{color:#555;margin-bottom:18px}
-
-.modal-actions{display:flex;justify-content:center;gap:14px}
-
-.btn-no,.btn-yes{
-  padding:10px 22px;
-  border-radius:28px;
-  color:white;
-  border:none;
-  font-weight:800;
+  background:#2e9a3f;
   cursor:pointer;
 }
-.btn-no{background:#e25a57}
-.btn-yes{background:#2e9a3f}
-
-th, td {
-  padding:12px;
-  border-bottom:1px solid #ddd;
-  text-align: center;   /* ✅ center header + data */
-  vertical-align: middle;
-}
-
-
 </style>
 </head>
 
@@ -278,6 +210,8 @@ th, td {
 <!-- SIDEBAR -->
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-card">
+
+    <!-- USER + LOGOUT -->
     <div class="user-panel">
       <strong><%= professorName %></strong>
       <button id="logoutBtn" class="logout-btn">Logout</button>
@@ -289,22 +223,35 @@ th, td {
   </div>
 </nav>
 
-
 <!-- MAIN -->
 <main class="main">
   <div class="container">
 
+    <!-- DASHBOARD VIEW -->
     <div id="dashboardView">
       <h1>Professor Dashboard</h1>
 
       <div class="overview">
-        <div class="card pending"><h3>Pending</h3><p><%= counts.pending %></p></div>
-        <div class="card approved"><h3>Approved</h3><p><%= counts.approved %></p></div>
-        <div class="card rejected"><h3>Rejected</h3><p><%= counts.rejected %></p></div>
-        <div class="card total"><h3>Total Reviewed</h3><p><%= counts.total %></p></div>
+        <div class="card pending">
+          <h3>Pending</h3>
+          <p><%= counts.pending %></p>
+        </div>
+        <div class="card approved">
+          <h3>Approved</h3>
+          <p><%= counts.approved %></p>
+        </div>
+        <div class="card rejected">
+          <h3>Rejected</h3>
+          <p><%= counts.rejected %></p>
+        </div>
+        <div class="card total">
+          <h3>Total Reviewed</h3>
+          <p><%= counts.total %></p>
+        </div>
       </div>
     </div>
 
+    <!-- REVIEWS VIEW -->
     <div id="reviewsView" style="display:none">
       <h1>My Reviews</h1>
       <table>
@@ -315,31 +262,29 @@ th, td {
             <th>Submitted</th>
             <th>Days</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <% allReviews.forEach(a=>{ 
-            const reviewed = a.status === 'Approved' || a.status === 'Rejected';
-          %>
+        <% allReviews.forEach(a=>{ %>
           <tr>
             <td><%= a.user?.name %></td>
             <td><%= a.title %></td>
             <td><%= new Date(a.submittedAt).toLocaleDateString() %></td>
             <td><%= a.daysPending %></td>
             <td>
-              <span class="badge <%= reviewed ? 'green' : 'blue' %>">
-                <%= reviewed ? 'Reviewed' : 'Pending' %>
+              <span class="badge <%= a.status==='Approved'?'green':'blue' %>">
+                <%= a.status %>
               </span>
             </td>
             <td>
-              <div class="btn-group">
-                <a class="btn review" href="/assignments/<%= a._id %>?mode=review">Review</a>
-                <a class="btn view" href="/assignments/<%= a._id %>">View Details</a>
-              </div>
+              <a class="btn"
+                 href="/professor/assignments/<%= a._id %>/review">
+                 Review
+              </a>
             </td>
           </tr>
-          <% }) %>
+        <% }) %>
         </tbody>
       </table>
     </div>
@@ -347,94 +292,49 @@ th, td {
   </div>
 </main>
 
-<!-- LOGOUT MODAL -->
-<div id="logoutModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3>Are you sure you want to logout?</h3>
-    <p>This will end your session.</p>
-    <div class="modal-actions">
-      <button class="btn-no" id="cancelLogout">No</button>
-      <button class="btn-yes" id="confirmLogout">Yes</button>
-    </div>
-  </div>
-</div>
-
 <script>
 const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.getElementById("sidebar");
 const logoutBtn = document.getElementById("logoutBtn");
-const modal = document.getElementById("logoutModal");
 
+menuBtn.onclick = e => {
+  e.stopPropagation();
+  document.body.classList.toggle("sidebar-open");
+};
+
+document.addEventListener("click", e => {
+  if(!sidebar.contains(e.target) && !menuBtn.contains(e.target)){
+    document.body.classList.remove("sidebar-open");
+  }
+});
+
+/* SIDEBAR NAV */
 const navDashboard = document.getElementById("navDashboard");
 const navReviews = document.getElementById("navReviews");
 const dashboardView = document.getElementById("dashboardView");
 const reviewsView = document.getElementById("reviewsView");
 
-/* ---------- TOGGLE OPEN / CLOSE ---------- */
-function openSidebar(){
-  document.body.classList.add("sidebar-open");
-  menuBtn.classList.add("open");
-}
-
-function closeSidebar(){
-  document.body.classList.remove("sidebar-open");
-  menuBtn.classList.remove("open");
-}
-
-menuBtn.onclick = (e) => {
-  e.stopPropagation(); // prevent outside click
-  if(document.body.classList.contains("sidebar-open")){
-    closeSidebar();
-  } else {
-    openSidebar();
-  }
-};
-
-/* ---------- CLOSE WHEN CLICK OUTSIDE ---------- */
-document.addEventListener("click", (e) => {
-  if(!document.body.classList.contains("sidebar-open")) return;
-
-  if(!sidebar.contains(e.target) && !menuBtn.contains(e.target)){
-    closeSidebar();
-  }
-});
-
-/* ---------- SIDEBAR NAVIGATION ---------- */
 navDashboard.onclick = () => {
   dashboardView.style.display = "block";
   reviewsView.style.display = "none";
-
   navDashboard.classList.add("active");
   navReviews.classList.remove("active");
-
-  closeSidebar();
+  document.body.classList.remove("sidebar-open");
 };
 
 navReviews.onclick = () => {
   dashboardView.style.display = "none";
   reviewsView.style.display = "block";
-
   navReviews.classList.add("active");
   navDashboard.classList.remove("active");
-
-  closeSidebar();
+  document.body.classList.remove("sidebar-open");
 };
 
-/* ---------- LOGOUT MODAL ---------- */
-logoutBtn.onclick = (e) => {
-  e.stopPropagation();
-  modal.style.display = "flex";
-};
-
-document.getElementById("cancelLogout").onclick = () => {
-  modal.style.display = "none";
-};
-
-document.getElementById("confirmLogout").onclick = () => {
+/* LOGOUT */
+logoutBtn.onclick = () => {
   window.location.href = "/logout";
 };
 </script>
-
 
 </body>
 </html>

@@ -1,14 +1,15 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
 const router = express.Router();
 
 const Assignment = require("../models/Assignment");
 const Professor = require("../models/Professor");
+const Notification = require("../models/Notification");
 const { verifyProfessor } = require("../middleware/authMiddleware");
 
 /* ================================
    PROFESSOR DASHBOARD
 ================================ */
+
 router.get("/professor/dashboard", verifyProfessor, async (req, res) => {
   try {
     const professorId = req.professor._id;
@@ -30,24 +31,6 @@ router.get("/professor/dashboard", verifyProfessor, async (req, res) => {
 
     const totalReviewed = approvedCount + rejectedCount;
 
-    const pendingAssignments = await Assignment.find({
-      reviewerId: professorId,
-      status: "Submitted"
-    })
-      .populate("user", "name")
-      .sort({ submittedAt: 1 })
-      .limit(3)
-      .lean();
-
-    const recentReviewed = await Assignment.find({
-      reviewerId: professorId,
-      status: { $in: ["Approved", "Rejected"] }
-    })
-      .populate("user", "name")
-      .sort({ updatedAt: -1 })
-      .limit(3)
-      .lean();
-
     const allReviews = await Assignment.find({
       reviewerId: professorId
     })
@@ -56,7 +39,6 @@ router.get("/professor/dashboard", verifyProfessor, async (req, res) => {
       .lean();
 
     const now = new Date();
-
     function withDays(a) {
       const base = a.submittedAt || a.createdAt;
       const daysPending = Math.floor(
@@ -73,8 +55,6 @@ router.get("/professor/dashboard", verifyProfessor, async (req, res) => {
         rejected: rejectedCount,
         total: totalReviewed
       },
-      pendingAssignments: pendingAssignments.map(withDays),
-      recentReviewed: recentReviewed.map(withDays),
       allReviews: allReviews.map(withDays)
     });
 
@@ -85,55 +65,66 @@ router.get("/professor/dashboard", verifyProfessor, async (req, res) => {
 });
 
 /* ================================
-   PROFESSOR PROFILE (GET)
+   REVIEW ASSIGNMENT PAGE
 ================================ */
-router.get("/professor/profile", verifyProfessor, async (req, res) => {
-  try {
-    const professor = await Professor.findById(req.professor._id)
-      .populate("department", "name");
 
-    res.render("professor-profile", {
-      professor: {
-        name: professor.name,
-        email: professor.email,
-        phone: professor.phone,
-        departmentName: professor.department?.name || ""
-      }
+router.get(
+  "/professor/assignments/:id/review",
+  verifyProfessor,
+  async (req, res) => {
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      reviewerId: req.professor._id
+    }).populate("user", "name email");
+
+    if (!assignment) {
+      return res.status(404).send("Assignment not found");
+    }
+
+    res.render("review-assignment", {
+      assignment,
+      professorName: req.professor.name
     });
-  } catch (err) {
-    console.error("Professor profile error:", err);
-    res.status(500).send("Server error");
   }
-});
+);
 
 /* ================================
-   PROFESSOR PROFILE UPDATE (POST)
+   APPROVE / REJECT
 ================================ */
-router.post("/professor/profile", verifyProfessor, async (req, res) => {
-  try {
-    const { phone, newPassword } = req.body;
-    const professor = await Professor.findById(req.professor._id);
 
-    if (phone !== undefined) {
-      professor.phone = phone;
+router.post(
+  "/professor/assignments/:id/decision",
+  verifyProfessor,
+  async (req, res) => {
+    const { status, remarks } = req.body;
+
+    if (!["Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid action" });
     }
 
-    if (newPassword && newPassword.length >= 6) {
-      professor.password = await bcrypt.hash(newPassword, 10);
-    }
-
-    await professor.save();
-
-    res.json({
-      message: newPassword
-        ? "Password changed successfully. Please login with your new password."
-        : "Profile updated successfully"
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      reviewerId: req.professor._id
     });
 
-  } catch (err) {
-    console.error("Professor profile update error:", err);
-    res.status(500).json({ error: "Failed to update profile" });
+    if (!assignment) {
+      return res.status(404).json({ message: "Assignment not found" });
+    }
+
+    assignment.status = status;
+    assignment.rejectionRemarks = status === "Rejected" ? remarks : "";
+
+    await assignment.save();
+
+    await Notification.create({
+      userId: assignment.user,
+      title: `Assignment ${status}`,
+      message: `Your assignment "${assignment.title}" has been ${status.toLowerCase()}.`,
+      assignmentId: assignment._id
+    });
+
+    res.json({ message: "Decision saved" });
   }
-});
+);
 
 module.exports = router;
