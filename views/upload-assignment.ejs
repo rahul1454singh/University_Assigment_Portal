@@ -21,13 +21,25 @@
 
     * { box-sizing: border-box; }
 
+    /* Flexbox setup to push footer to bottom */
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
     body{
       font-family: "Segoe UI", Arial, sans-serif;
       background: var(--bg);
-      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-grow {
+      flex: 1 0 auto;
       padding: 40px 16px;
       display: flex;
       justify-content: center;
+      align-items: flex-start;
     }
 
     .container{
@@ -107,123 +119,124 @@
       text-align: center;
     }
 
-    .btn-back{
-      background: var(--back);
-    }
+    .btn-back{ background: var(--back); }
+    .btn-upload{ background: var(--accent); }
+    .btn-bulk{ background: var(--bulk); }
 
-    .btn-upload{
-      background: var(--accent);
-    }
+    .msg-error{ background: #ffe6e6; color: #c0392b; padding: 10px; border-radius: 8px; font-weight: 700; margin-bottom: 14px; }
+    .msg-success{ background: #e9f7ee; color: #177a3b; padding: 10px; border-radius: 8px; font-weight: 700; margin-bottom: 14px; }
 
-    .btn-bulk{
-      background: var(--bulk);
+    /* Footer Styles */
+    footer {
+      flex-shrink: 0;
+      text-align: center;
+      padding: 30px 0;
+      width: 100%;
     }
-
-    .msg-error{
-      background: #ffe6e6;
-      color: #c0392b;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: 700;
-      margin-bottom: 14px;
+    .footer-brand {
+      font-weight: 800;
+      font-size: 14px;
+      color: #000;
+      margin-bottom: 2px;
     }
-
-    .msg-success{
-      background: #e9f7ee;
-      color: #177a3b;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: 700;
-      margin-bottom: 14px;
+    .footer-copyright {
+      font-size: 13px;
+      color: #666;
     }
 
     @media (max-width: 600px){
       h1 { font-size: 22px; }
+      .content-grow { padding-top: 20px; }
     }
   </style>
 </head>
 <body>
 
-<div class="container">
+<div class="content-grow">
+  <div class="container">
 
-  <div class="header-row">
-    <h1>Upload Assignment</h1>
-    <a href="/student/assignments/bulk-upload" class="btn btn-bulk">
-      Bulk Upload
-    </a>
-  </div>
-
-  <% if (error) { %>
-    <div class="msg-error"><%= error %></div>
-  <% } %>
-
-  <% if (success) { %>
-    <div class="msg-success"><%= success %></div>
-  <% } %>
-
-  <form action="/student/assignments/upload" method="POST" enctype="multipart/form-data">
-
-    <div class="row">
-      <div class="col">
-        <label>Title</label>
-        <input type="text" name="title" required>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <label>Description</label>
-        <textarea name="description"></textarea>
-      </div>
-    </div>
-
-    <!-- PROFESSOR SELECT (SAFE) -->
-    <div class="row">
-      <div class="col">
-        <label>Professor</label>
-        <select name="professor" required>
-          <option value="">Select Professor</option>
-          <% if (professors && professors.length) { %>
-            <% professors.forEach(prof => { %>
-              <option value="<%= prof._id %>">
-                <%= prof.fullName || prof.name %>
-              </option>
-            <% }) %>
-          <% } %>
-        </select>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <label>Category</label>
-        <select name="category">
-          <option value="Assignment">Assignment</option>
-          <option value="Thesis">Thesis</option>
-          <option value="Report">Report</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <label>File (PDF only)</label>
-        <input type="file" name="file" accept="application/pdf" required>
-      </div>
-    </div>
-
-    <div class="actions">
-      <a href="/student/dashboard" class="btn btn-back">
-        Back to Dashboard
+    <div class="header-row">
+      <h1>Upload Assignment</h1>
+      <a href="/student/assignments/bulk-upload" class="btn btn-bulk">
+        Bulk Upload
       </a>
-      <button type="submit" class="btn btn-upload">
-        Upload
-      </button>
     </div>
 
-  </form>
+    <% if (error) { %>
+      <div class="msg-error"><%= error %></div>
+    <% } %>
 
+    <% if (success) { %>
+      <div class="msg-success"><%= success %></div>
+    <% } %>
+
+    <form action="/student/assignments/upload" method="POST" enctype="multipart/form-data">
+
+      <div class="row">
+        <div class="col">
+          <label>Title</label>
+          <input type="text" name="title" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Description</label>
+          <textarea name="description"></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Professor</label>
+          <select name="professor" required>
+            <option value="">Select Professor</option>
+            <% if (professors && professors.length) { %>
+              <% professors.forEach(prof => { %>
+                <option value="<%= prof._id %>">
+                  <%= prof.fullName || prof.name %>
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Category</label>
+          <select name="category">
+            <option value="Assignment">Assignment</option>
+            <option value="Thesis">Thesis</option>
+            <option value="Report">Report</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>File (PDF only)</label>
+          <input type="file" name="file" accept="application/pdf" required>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="/student/dashboard" class="btn btn-back">
+          Back to Dashboard
+        </a>
+        <button type="submit" class="btn btn-upload">
+          Upload
+        </button>
+      </div>
+
+    </form>
+  </div>
 </div>
+
+<footer role="contentinfo">
+  <div class="footer-brand">University Management</div>
+  <div class="footer-copyright">© 2026 Your University Dashboard</div>
+</footer>
 
 </body>
 </html>

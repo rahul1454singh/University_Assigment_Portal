@@ -7,7 +7,17 @@
   <style>
     :root { --blue:#4b6cb7; --card:#fff; --bg:#f3f5f9; }
     * { box-sizing: border-box; }
-    body { font-family: "Segoe UI", sans-serif; margin:0; background:var(--bg); color:#333; }
+    
+    /* Ensure the body takes full height for a sticky footer */
+    html, body { height: 100%; }
+    body { 
+      font-family: "Segoe UI", sans-serif; 
+      margin:0; 
+      background:var(--bg); 
+      color:#333;
+      display: flex;
+      flex-direction: column; 
+    }
 
     .navbar {
       background:var(--blue); color:#fff; padding:10px 20px;
@@ -17,7 +27,17 @@
     .navbar a { color:#fff; text-decoration:none; font-weight:600; margin-left:12px; }
     .btn-create { background:var(--blue); color:#fff; padding:8px 12px; border-radius:6px; text-decoration:none; font-weight:700; }
 
-    .container { max-width:1000px; margin:18px auto; background:var(--card); border-radius:10px; padding:18px; box-shadow:0 3px 10px rgba(0,0,0,.08); }
+    /* flex-grow pushes the footer down */
+    .container { 
+      max-width:1000px; 
+      margin:18px auto; 
+      background:var(--card); 
+      border-radius:10px; 
+      padding:18px; 
+      box-shadow:0 3px 10px rgba(0,0,0,.08);
+      flex: 1 0 auto; 
+      width: 95%;
+    }
 
     h1 { text-align:center; margin:6px 0 18px; font-size:22px; }
 
@@ -44,6 +64,15 @@
     .toast.error { background:#f8d7da; color:#721c24; }
     .toast .close { margin-left:8px; cursor:pointer; opacity:.8; font-weight:700; }
 
+    /* footer */
+    .app-footer { 
+      padding: 16px; 
+      text-align: center; 
+      color: #5b6b6b; 
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
     @media (max-width:800px){
       .filters { flex-direction:column; align-items:stretch; }
       .btn-create { width:100%; text-align:center; }
@@ -57,14 +86,12 @@
     <div>
       <a href="/admin/dashboard">Dashboard</a>
       <a href="/admin/users/create" class="btn-create">Create User</a>
-     
     </div>
   </div>
 
   <div class="container">
     <h1>All Users</h1>
 
-    <!-- toast -->
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true">
       <div id="toast-inner" class="inner"></div>
     </div>
@@ -118,8 +145,12 @@
     </div>
   </div>
 
+  <footer class="app-footer">
+    <div style="font-weight:800; color:#222;">University Management</div>
+    <div>© <%= new Date().getFullYear() %> Your University</div>
+  </footer>
+
   <script>
-    
     (function() {
       const success = <%- JSON.stringify(typeof success !== 'undefined' ? success : null) %>;
       const error   = <%- JSON.stringify(typeof error !== 'undefined' ? error : null) %>;
@@ -129,8 +160,6 @@
 
       function showToast(message, isError = false) {
         inner.textContent = (isError ? 'Error: ' : 'Success: ') + message;
-
-        // add close button only once
         if (!inner.querySelector('.close')) {
           const closeBtn = document.createElement('span');
           closeBtn.className = 'close';
@@ -139,15 +168,10 @@
           closeBtn.onclick = () => toast.style.display = 'none';
           inner.appendChild(closeBtn);
         }
-
         toast.className = 'toast ' + (isError ? 'error' : 'success');
         toast.style.display = 'block';
-
-        // auto-hide
         clearTimeout(showToast._hideTimer);
         showToast._hideTimer = setTimeout(() => toast.style.display = 'none', 4000);
-
-        // remove query params that may contain messages (safe fallback)
         try {
           if (history.replaceState) {
             const u = new URL(window.location);
@@ -155,71 +179,50 @@
             u.searchParams.delete('error');
             history.replaceState(null, '', u.pathname + u.search);
           }
-        } catch (e) { error }
+        } catch (e) { }
       }
-
       if (success) showToast(success, false);
       if (error) showToast(error, true);
     })();
-  </script>
 
-  <script>
-    // --- Table filtering and  simple pagination ---
     (function () {
       const rowsPerPage = 5;
       const table = document.getElementById('usersTable');
       const tbody = table.tBodies[0];
       const allRows = Array.from(tbody.rows);
-
       const searchInput = document.getElementById('searchInput');
       const roleFilter = document.getElementById('roleFilter');
       const deptFilter = document.getElementById('deptFilter');
-
       const prevBtn = document.getElementById('prevBtn');
       const nextBtn = document.getElementById('nextBtn');
       const pageInfo = document.getElementById('pageInfo');
-
-      let visibleRows = allRows.slice(); // rows matching filters
+      let visibleRows = allRows.slice();
       let currentPage = 1;
-
       function normalize(s) { return String(s || '').trim().toLowerCase(); }
-
       function applyFilters() {
         const q = normalize(searchInput.value);
         const role = normalize(roleFilter.value);
         const dept = normalize(deptFilter.value);
-
         visibleRows = allRows.filter(row => {
           const name = normalize(row.cells[0].textContent);
           const email = normalize(row.cells[1].textContent);
           const r = normalize(row.cells[2].textContent);
           const d = normalize(row.cells[3].textContent);
-
-          const matchesQuery = !q || name.includes(q) || email.includes(q);
-          const matchesRole = !role || r === role;
-          const matchesDept = !dept || d === dept;
-          return matchesQuery && matchesRole && matchesDept;
+          return (!q || name.includes(q) || email.includes(q)) && (!role || r === role) && (!dept || d === dept);
         });
-
         currentPage = 1;
         render();
       }
-
       function render() {
         const totalPages = Math.max(1, Math.ceil(visibleRows.length / rowsPerPage));
         const start = (currentPage - 1) * rowsPerPage;
         const end = start + rowsPerPage;
-
-        // hide all, then show the slice
         allRows.forEach(r => r.style.display = 'none');
         visibleRows.slice(start, end).forEach(r => r.style.display = '');
-
         pageInfo.textContent = `${currentPage} / ${totalPages}`;
         prevBtn.disabled = currentPage <= 1;
         nextBtn.disabled = currentPage >= totalPages;
       }
-
-      // wire events (debounce search a little)
       let searchTimer = null;
       searchInput.addEventListener('input', () => {
         clearTimeout(searchTimer);
@@ -227,16 +230,11 @@
       });
       roleFilter.addEventListener('change', applyFilters);
       deptFilter.addEventListener('change', applyFilters);
-
-      prevBtn.addEventListener('click', () => {
-        if (currentPage > 1) { currentPage--; render(); }
-      });
+      prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); } });
       nextBtn.addEventListener('click', () => {
         const totalPages = Math.max(1, Math.ceil(visibleRows.length / rowsPerPage));
         if (currentPage < totalPages) { currentPage++; render(); }
       });
-
-      // initial render
       applyFilters();
     })();
   </script>

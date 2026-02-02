@@ -5,103 +5,145 @@
   <title>Student Profile</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root{--blue:#4b6cb7;--bg:#f3f5f9;--card:#fff}
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:"Segoe UI",sans-serif;background:var(--bg);color:#222;padding:18px}
-    .container{max-width:960px;margin:24px auto}
-    .card{background:var(--card);padding:22px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.06)}
-    .row{display:flex;gap:18px;align-items:center}
-    .avatar{
-      width:84px;height:84px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:32px;flex-shrink:0;
+    :root {
+      --blue: #4b6cb7;
+      --bg: #f3f5f9;
+      --card: #fff;
     }
-    h1{font-size:24px;margin-bottom:12px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-    label{font-weight:700;font-size:13px;margin-bottom:6px;display:block;color:#333}
-    input[type=text],input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;background:#fff}
-    input[readonly]{background:#f5f6f8;color:#666}
-    .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
-    .btn{padding:8px 14px;border-radius:8px;background:var(--blue);color:#fff;border:none;font-weight:700;cursor:pointer}
-    .btn.ghost{background:#777}
-    .meta{color:#666;font-size:13px;margin-left:12px}
-    @media (max-width:760px){ .grid{grid-template-columns:1fr} .row{flex-direction:column;align-items:flex-start} .avatar{width:72px;height:72px;font-size:28px} }
-    .msg{padding:10px;border-radius:8px;margin-top:10px;}
-    .msg.success{background:#e9f7ee;color:#1f8a3a}
-    .msg.error{background:#fdecea;color:#a12a2a}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    /* Flexbox layout to push footer to bottom */
+    html, body {
+      height: 100%;
+    }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: #222;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-grow {
+      flex: 1 0 auto;
+      padding: 18px;
+    }
+
+    .container { max-width: 960px; margin: 24px auto; }
+    .card { background: var(--card); padding: 22px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+    .row { display: flex; gap: 18px; align-items: center; }
+    .avatar {
+      width: 84px; height: 84px; border-radius: 50%; background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 32px; flex-shrink: 0;
+    }
+    h1 { font-size: 24px; margin-bottom: 12px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    label { font-weight: 700; font-size: 13px; margin-bottom: 6px; display: block; color: #333; }
+    input[type=text], input[type=email], input[type=password] {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e6e9ef; font-size: 14px; background: #fff;
+    }
+    input[readonly] { background: #f5f6f8; color: #666; }
+    .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+    .btn { padding: 8px 14px; border-radius: 8px; background: var(--blue); color: #fff; border: none; font-weight: 700; cursor: pointer; }
+    .btn.ghost { background: #777; }
+    .meta { color: #666; font-size: 13px; margin-left: 12px; }
+
+    /* Footer Styles */
+    footer {
+      flex-shrink: 0;
+      text-align: center;
+      padding: 30px 0;
+      width: 100%;
+    }
+    .footer-brand { font-weight: 800; font-size: 14px; color: #000; margin-bottom: 2px; }
+    .footer-copyright { font-size: 13px; color: #666; }
+
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: 1fr; }
+      .row { flex-direction: column; align-items: flex-start; }
+      .avatar { width: 72px; height: 72px; font-size: 28px; }
+    }
+    .msg { padding: 10px; border-radius: 8px; margin-top: 10px; }
+    .msg.success { background: #e9f7ee; color: #1f8a3a; }
+    .msg.error { background: #fdecea; color: #a12a2a; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card" role="main">
-      <div class="row">
-        <div class="avatar" aria-hidden="true">
-          <% 
-            let initial = 'S';
-            if (user && user.name) {
-              const s = user.name.trim();
-              if (s.length) initial = s[0].toUpperCase();
-            }
-          %>
-          <%= initial %>
-        </div>
-        <div>
-          <h1>Profile</h1>
-          <div class="meta"><strong><%= user && user.name ? user.name : '' %></strong> — <%= user && user.email ? user.email : '' %></div>
-        </div>
-      </div>
 
-      <form id="profileForm" action="/student/profile" method="POST">
-        <div class="grid" style="margin-top:18px;">
-          <div>
-            <label for="name">Name</label>
-            <input id="name" name="name" type="text" value="<%= user && user.name ? user.name : '' %>" readonly />
-          </div>
-
-          <div>
-            <label for="department">Department</label>
+  <div class="content-grow">
+    <div class="container">
+      <div class="card" role="main">
+        <div class="row">
+          <div class="avatar" aria-hidden="true">
             <% 
-              // determine the department display name with fallbacks
-              let deptDisplay = "";
-              if (user) {
-                if (typeof user.departmentName === 'string' && user.departmentName.length) {
-                  deptDisplay = user.departmentName;
-                } else if (user.department && typeof user.department === 'object' && user.department.name) {
-                  deptDisplay = user.department.name;
-                } else if (user.department && typeof user.department === 'string') {
-                  // If department is still an id string, show blank or the id (you likely don't want to show id)
-                  deptDisplay = ""; 
-                } else {
-                  deptDisplay = "";
-                }
+              let initial = 'S';
+              if (user && user.name) {
+                const s = user.name.trim();
+                if (s.length) initial = s[0].toUpperCase();
               }
             %>
-            <input id="department" name="departmentName" type="text" value="<%= deptDisplay %>" readonly />
+            <%= initial %>
           </div>
-
           <div>
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" value="<%= user && user.email ? user.email : '' %>" readonly />
-          </div>
-
-          <div>
-            <label for="phone">Phone</label>
-            <input id="phone" name="phone" type="text" value="<%= user && user.phone ? user.phone : '' %>" />
-          </div>
-
-          <div style="grid-column:1 / -1;">
-            <label for="newPassword">Change your password</label>
-            <input id="newPassword" name="newPassword" type="password" placeholder="New password" autocomplete="new-password" />
+            <h1>Profile</h1>
+            <div class="meta"><strong><%= user && user.name ? user.name : '' %></strong> — <%= user && user.email ? user.email : '' %></div>
           </div>
         </div>
 
-        <div class="actions">
-          <button type="button" id="cancelBtn" class="btn ghost">Cancel</button>
-          <button type="submit" class="btn">Save Changes</button>
-        </div>
+        <form id="profileForm" action="/student/profile" method="POST">
+          <div class="grid" style="margin-top:18px;">
+            <div>
+              <label for="name">Name</label>
+              <input id="name" name="name" type="text" value="<%= user && user.name ? user.name : '' %>" readonly />
+            </div>
 
-        <div id="profileMsg" style="display:none" role="status"></div>
-      </form>
+            <div>
+              <label for="department">Department</label>
+              <% 
+                let deptDisplay = "";
+                if (user) {
+                  if (typeof user.departmentName === 'string' && user.departmentName.length) {
+                    deptDisplay = user.departmentName;
+                  } else if (user.department && typeof user.department === 'object' && user.department.name) {
+                    deptDisplay = user.department.name;
+                  }
+                }
+              %>
+              <input id="department" name="departmentName" type="text" value="<%= deptDisplay %>" readonly />
+            </div>
+
+            <div>
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" value="<%= user && user.email ? user.email : '' %>" readonly />
+            </div>
+
+            <div>
+              <label for="phone">Phone</label>
+              <input id="phone" name="phone" type="text" value="<%= user && user.phone ? user.phone : '' %>" />
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+              <label for="newPassword">Change your password</label>
+              <input id="newPassword" name="newPassword" type="password" placeholder="New password" autocomplete="new-password" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="cancelBtn" class="btn ghost">Cancel</button>
+            <button type="submit" class="btn">Save Changes</button>
+          </div>
+
+          <div id="profileMsg" style="display:none" role="status"></div>
+        </form>
+      </div>
     </div>
   </div>
+
+  <footer role="contentinfo">
+    <div class="footer-brand">University Management</div>
+    <div class="footer-copyright">© 2026 Your University Dashboard</div>
+  </footer>
 
   <script>
     (function(){
@@ -117,7 +159,6 @@
         const data = {
           phone: form.phone.value.trim(),
           newPassword: form.newPassword.value.trim()
-          // note: department/name/email are readonly and not sent for update
         };
 
         if (data.newPassword && data.newPassword.length < 6) {
@@ -134,7 +175,6 @@
           if (res.ok) {
             msg.style.display = 'block'; msg.className = 'msg success'; msg.textContent = json.message || 'Profile updated.';
             form.newPassword.value = '';
-            if (json.user && json.user.phone) form.phone.value = json.user.phone || '';
           } else {
             msg.style.display = 'block'; msg.className = 'msg error'; msg.textContent = json.error || 'Update failed.';
           }

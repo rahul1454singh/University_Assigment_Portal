@@ -6,103 +6,158 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   <style>
-    body{
-      font-family:"Segoe UI",Arial,sans-serif;
-      background:#f3f5f9;
-      margin:0;
-      padding:40px 16px;
-      display:flex;
-      justify-content:center;
+    /* Flexbox setup to push footer to bottom */
+    html, body {
+      height: 100%;
+      margin: 0;
     }
-    .container{
-      background:#fff;
-      max-width:760px;
-      width:100%;
-      padding:24px;
-      border-radius:10px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.06);
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f3f5f9;
+      display: flex;
+      flex-direction: column;
     }
-    h1{margin-top:0}
-    .row{margin-bottom:14px}
-    label{font-weight:700;color:#555;margin-bottom:6px;display:block}
-    select,input{
-      width:100%;
-      padding:10px;
-      border-radius:8px;
-      border:1px solid #ddd;
+
+    .content-grow {
+      flex: 1 0 auto;
+      padding: 40px 16px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
-    .actions{
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
+
+    .container {
+      background: #fff;
+      max-width: 760px;
+      width: 100%;
+      padding: 24px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
     }
-    .btn{
-      padding:10px 16px;
-      border-radius:8px;
-      font-weight:700;
-      border:none;
-      cursor:pointer;
-      color:#fff;
-      text-decoration:none;
+
+    h1 { margin-top: 0; font-size: 28px; }
+    .row { margin-bottom: 14px; }
+    label { font-weight: 700; color: #555; margin-bottom: 6px; display: block; font-size: 14px; }
+    
+    select, input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-family: inherit;
+      font-size: 14px;
     }
-    .btn-back{background:#555}
-    .btn-upload{background:#3551a1}
-    .error{
-      background:#ffe6e6;
-      color:#c0392b;
-      padding:10px;
-      border-radius:8px;
-      font-weight:700;
-      margin-bottom:12px;
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .btn-back { background: #555; }
+    .btn-upload { background: #3551a1; }
+
+    .error {
+      background: #ffe6e6;
+      color: #c0392b;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    /* Footer Styles */
+    footer {
+      flex-shrink: 0;
+      text-align: center;
+      padding: 30px 0;
+      width: 100%;
+    }
+    .footer-brand {
+      font-weight: 800;
+      font-size: 14px;
+      color: #000;
+      margin-bottom: 2px;
+    }
+    .footer-copyright {
+      font-size: 13px;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 22px; }
+      .content-grow { padding-top: 20px; }
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Bulk Upload Assignments</h1>
+<div class="content-grow">
+  <div class="container">
+    <h1>Bulk Upload Assignments</h1>
 
-  <% if (error) { %>
-    <div class="error"><%= error %></div>
-  <% } %>
+    <% if (error) { %>
+      <div class="error"><%= error %></div>
+    <% } %>
 
-  <form action="/student/assignments/bulk-upload" method="post" enctype="multipart/form-data">
+    <form action="/student/assignments/bulk-upload" method="post" enctype="multipart/form-data">
 
-    <div class="row">
-      <label>Professor</label>
-      <select name="professor" required>
-        <option value="">Select Professor</option>
-        <% if (professors && professors.length) { %>
-          <% professors.forEach(p => { %>
-            <option value="<%= p._id %>">
-              <%= p.fullName || p.name %>
-            </option>
-          <% }) %>
-        <% } %>
-      </select>
-    </div>
+      <div class="row">
+        <label>Professor</label>
+        <select name="professor" required>
+          <option value="">Select Professor</option>
+          <% if (professors && professors.length) { %>
+            <% professors.forEach(p => { %>
+              <option value="<%= p._id %>">
+                <%= p.fullName || p.name %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
 
-    <div class="row">
-      <label>Category</label>
-      <select name="category">
-        <option value="Assignment">Assignment</option>
-        <option value="Thesis">Thesis</option>
-        <option value="Report">Report</option>
-      </select>
-    </div>
+      <div class="row">
+        <label>Category</label>
+        <select name="category">
+          <option value="Assignment">Assignment</option>
+          <option value="Thesis">Thesis</option>
+          <option value="Report">Report</option>
+        </select>
+      </div>
 
-    <div class="row">
-      <label>Files (PDF only)</label>
-      <input type="file" name="files" multiple accept="application/pdf" required>
-    </div>
+      <div class="row">
+        <label>Files (PDF only)</label>
+        <input type="file" name="files" multiple accept="application/pdf" required>
+      </div>
 
-    <div class="actions">
-      <a href="/student/assignments/upload" class="btn btn-back">Back</a>
-      <button type="submit" class="btn btn-upload">Upload All</button>
-    </div>
+      <div class="actions">
+        <a href="/student/assignments/upload" class="btn btn-back">Back</a>
+        <button type="submit" class="btn btn-upload">Upload All</button>
+      </div>
 
-  </form>
+    </form>
+  </div>
 </div>
+
+<footer role="contentinfo">
+  <div class="footer-brand">University Management</div>
+  <div class="footer-copyright">© 2026 Your University Dashboard</div>
+</footer>
 
 </body>
 </html>

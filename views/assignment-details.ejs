@@ -173,9 +173,17 @@
       <% } %>
     </div>
 
+    <!-- ✅ REVIEWER LOGIC FIXED -->
     <div>
       <div class="label">Reviewer</div>
-      <div><%= assignment.reviewerName || "-" %></div>
+
+      <% if (assignment.status === 'Approved' || assignment.status === 'Rejected') { %>
+        <div>
+          <strong><%= assignment.reviewerName || "Professor" %></strong>
+        </div>
+      <% } else { %>
+        <div>-</div>
+      <% } %>
     </div>
   </div>
 

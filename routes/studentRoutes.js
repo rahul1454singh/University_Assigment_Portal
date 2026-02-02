@@ -78,7 +78,10 @@ router.get("/student/assignments", verifyStudent, async (req, res) => {
 /* ===================== UPLOAD PAGE ===================== */
 
 router.get("/student/assignments/upload", verifyStudent, async (req, res) => {
-  const professors = await User.find({ role: "Professor" })
+  const professors = await User.find({
+    role: "Professor",
+    department: req.user.department
+  })
     .select("_id name fullName")
     .lean();
 
@@ -89,10 +92,13 @@ router.get("/student/assignments/upload", verifyStudent, async (req, res) => {
   });
 });
 
-/* ===================== BULK UPLOAD PAGE (✅ MUST BE HERE) ===================== */
+/* ===================== BULK UPLOAD PAGE ===================== */
 
 router.get("/student/assignments/bulk-upload", verifyStudent, async (req, res) => {
-  const professors = await User.find({ role: "Professor" })
+  const professors = await User.find({
+    role: "Professor",
+    department: req.user.department
+  })
     .select("_id name fullName")
     .lean();
 
@@ -105,7 +111,10 @@ router.get("/student/assignments/bulk-upload", verifyStudent, async (req, res) =
 /* ===================== BULK UPLOAD POST ===================== */
 
 router.post("/student/assignments/bulk-upload", verifyStudent, async (req, res) => {
-  const professors = await User.find({ role: "Professor" })
+  const professors = await User.find({
+    role: "Professor",
+    department: req.user.department
+  })
     .select("_id name fullName")
     .lean();
 
@@ -122,7 +131,11 @@ router.post(
   verifyStudent,
   upload.single("file"),
   async (req, res) => {
-    const professors = await User.find({ role: "Professor" })
+
+    const professors = await User.find({
+      role: "Professor",
+      department: req.user.department
+    })
       .select("_id name fullName")
       .lean();
 
@@ -172,7 +185,10 @@ router.get("/student/assignments/:id/edit", verifyStudent, async (req, res) => {
     return res.status(403).send("This assignment cannot be edited");
   }
 
-  const professors = await User.find({ role: "Professor" })
+  const professors = await User.find({
+    role: "Professor",
+    department: req.user.department
+  })
     .select("_id name fullName")
     .lean();
 
@@ -185,7 +201,7 @@ router.get("/student/assignments/:id/edit", verifyStudent, async (req, res) => {
   });
 });
 
-/* ===================== ASSIGNMENT DETAILS (🚨 MUST BE LAST) ===================== */
+/* ===================== ASSIGNMENT DETAILS ===================== */
 
 router.get("/student/assignments/:id", verifyStudent, async (req, res) => {
   const assignment = await Assignment.findOne({
@@ -197,7 +213,10 @@ router.get("/student/assignments/:id", verifyStudent, async (req, res) => {
     return res.status(404).send("Assignment not found");
   }
 
-  const professors = await User.find({ role: "Professor" })
+  const professors = await User.find({
+    role: "Professor",
+    department: req.user.department
+  })
     .select("_id name fullName")
     .lean();
 

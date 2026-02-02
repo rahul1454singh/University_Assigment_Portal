@@ -5,8 +5,33 @@
   <title>Your Assignments</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: "Segoe UI", Arial, sans-serif; background: #f3f5f9; color: #222; margin: 0; padding: 28px; }
-    .wrap { max-width: 1100px; margin: 0 auto; background: #fff; padding: 28px; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.06); }
+    /* Flexbox setup to keep footer at bottom */
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body { 
+      font-family: "Segoe UI", Arial, sans-serif; 
+      background: #f3f5f9; 
+      color: #222; 
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-grow {
+      flex: 1 0 auto;
+      padding: 28px;
+    }
+
+    .wrap { 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      background: #fff; 
+      padding: 28px; 
+      border-radius: 14px; 
+      box-shadow: 0 15px 40px rgba(0,0,0,0.06); 
+    }
+
     h1 { margin: 0 0 20px; font-size: 28px; font-weight: 800; }
 
     .btn-main { padding: 10px 18px; background: #3551a1; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 700; margin-right: 14px; display: inline-block; }
@@ -22,73 +47,98 @@
     .s-draft { background: #eef2ff; color: #2b3ea8; }
     .s-submitted { background: #fff3d4; color: #177a3b; }
 
-    .action-btn { padding: 6px 12px; border-radius: 6px; font-weight: 700; margin-right: 8px; border: none; text-decoration: none; display: inline-block; font-size: 14px; }
+    .action-btn { padding: 6px 12px; border-radius: 6px; font-weight: 700; margin-right: 8px; border: none; text-decoration: none; display: inline-block; font-size: 14px; cursor: pointer; }
     .edit-btn { background: #2b7be4; color: #fff; }
     .delete-btn { background: #e74c3c; color: #fff; }
 
     td.actions { white-space: nowrap; }
 
+    /* Modal Styles */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 2200; }
     .modal-overlay.open { display: flex; }
-    .modal { width: 520px; background: #fff; border-radius: 12px; padding: 18px; }
+    .modal { width: 520px; background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
     .modal h3 { margin: 0 0 8px; }
-    .meta-list { margin-top: 8px; background: #fbfbfb; padding: 10px; border-radius: 8px; font-size: 14px; }
     .modal-actions { display:flex; justify-content:flex-end; margin-top: 12px; }
-    .btn-cancel { padding:8px 12px; background:#6c757d;color:#fff;border-radius:8px;border:none;font-weight:700; cursor:pointer; }
+    .btn-cancel { padding:8px 12px; background:#6c757d; color:#fff; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
+
+    /* Footer Styles */
+    footer {
+      flex-shrink: 0;
+      text-align: center;
+      padding: 30px 0;
+      width: 100%;
+      background: transparent;
+    }
+    .footer-brand { font-weight: 800; font-size: 14px; color: #000; margin-bottom: 2px; }
+    .footer-copyright { font-size: 13px; color: #666; }
+
+    @media (max-width: 768px) {
+      body { padding: 0; }
+      .content-grow { padding: 15px; }
+      .wrap { padding: 15px; border-radius: 0; }
+      table { display: block; overflow-x: auto; }
+    }
   </style>
 </head>
 
 <body>
-<div class="wrap">
-  <h1>Your Assignments</h1>
+<div class="content-grow">
+  <div class="wrap">
+    <h1>Your Assignments</h1>
 
-  <div style="margin-bottom:20px">
-    <a href="/student/assignments/upload" class="btn-main">Upload New Assignment</a>
-    <a href="/student/dashboard" class="btn-secondary">Back to Dashboard</a>
-  </div>
+    <div style="margin-bottom:20px">
+      <a href="/student/assignments/upload" class="btn-main">Upload New Assignment</a>
+      <a href="/student/dashboard" class="btn-secondary">Back to Dashboard</a>
+    </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Category</th>
-        <th>Status</th>
-        <th>Uploaded</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-    <% assignments.forEach(a => { %>
-      <tr onclick="openDetails('<%= a._id %>')">
-        <td><%= a.title %></td>
-        <td><%= a.category || '-' %></td>
-        <td>
-          <span class="status s-<%= a.status.toLowerCase() %>">
-            <%= a.status %>
-          </span>
-        </td>
-        <td><%= new Date(a.createdAt).toLocaleString() %></td>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Uploaded</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      <% assignments.forEach(a => { %>
+        <tr onclick="openDetails('<%= a._id %>')">
+          <td><%= a.title %></td>
+          <td><%= a.category || '-' %></td>
+          <td>
+            <span class="status s-<%= a.status.toLowerCase() %>">
+              <%= a.status %>
+            </span>
+          </td>
+          <td><%= new Date(a.createdAt).toLocaleString() %></td>
 
-        <td class="actions" onclick="event.stopPropagation()">
-          <% if (a.status === 'Draft' || a.status === 'Rejected') { %>
-            <a href="/student/assignments/<%= a._id %>/edit" class="action-btn edit-btn">Edit</a>
-          <% } else { %>
-            <button class="action-btn edit-btn"
-              onclick="openSubmittedModal(event,'<%= a.title %>','<%= a.status %>')">
-              Edit
+          <td class="actions" onclick="event.stopPropagation()">
+            <% if (a.status === 'Draft' || a.status === 'Rejected') { %>
+              <a href="/student/assignments/<%= a._id %>/edit" class="action-btn edit-btn">Edit</a>
+            <% } else { %>
+              <button class="action-btn edit-btn"
+                onclick="openSubmittedModal(event,'<%= a.title %>','<%= a.status %>')">
+                Edit
+              </button>
+            <% } %>
+
+            <button class="action-btn delete-btn"
+              onclick="deleteAssignment('<%= a._id %>')">
+              Delete
             </button>
-          <% } %>
-
-          <button class="action-btn delete-btn"
-            onclick="deleteAssignment('<%= a._id %>')">
-            Delete
-          </button>
-        </td>
-      </tr>
-    <% }) %>
-    </tbody>
-  </table>
+          </td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </div>
 </div>
+
+<footer role="contentinfo">
+  <div class="footer-brand">University Management</div>
+  <div class="footer-copyright">© 2026 Your University Dashboard</div>
+</footer>
 
 <div id="submittedModal" class="modal-overlay">
   <div class="modal">
@@ -126,6 +176,13 @@ function openSubmittedModal(e, title, status) {
 
 function closeSubmittedModal() {
   modal.classList.remove("open");
+}
+
+// Close modal when clicking overlay
+window.onclick = function(event) {
+  if (event.target == modal) {
+    closeSubmittedModal();
+  }
 }
 </script>
 </body>

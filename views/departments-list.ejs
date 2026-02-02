@@ -7,9 +7,32 @@
   <style>
     :root{--blue:#4b6cb7;--bg:#f3f5f9}
     *{box-sizing:border-box}
-    body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:#111}
+    
+    /* Ensure body takes full height to push footer down */
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family:Segoe UI,Arial,sans-serif;
+      background:var(--bg);
+      color:#111;
+      display: flex;
+      flex-direction: column;
+    }
+    
     .nav{background:var(--blue);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
-    .container{max-width:980px;margin:18px auto;background:#fff;border-radius:10px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    
+    /* Main takes up remaining space */
+    main.container{
+      flex: 1 0 auto;
+      max-width:980px;
+      width: 95%;
+      margin:18px auto;
+      background:#fff;
+      border-radius:10px;
+      padding:16px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.06)
+    }
+    
     h1{text-align:center;margin:0 0 12px}
 
     .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:12px}
@@ -21,7 +44,6 @@
     th{background:var(--blue);color:#fff}
     tbody tr:nth-child(even){background:#f8fbff}
 
-    /* unified button style for anchors and buttons */
     .btn{
       display:inline-block;
       padding:8px 10px;
@@ -29,32 +51,37 @@
       font-weight:700;
       border:none;
       cursor:pointer;
-      text-decoration:none;   /* remove underline for anchors */
+      text-decoration:none;
       color: #fff;
       font-size:13px;
       line-height:1;
     }
 
-    /* edit keeps its yellow color but follows same block look as delete */
     .edit{ background:#ffc107; color:#111; }
     .edit:hover{ filter:brightness(.95); }
 
-    /* delete uses red */
     .del{ background:#dc3545; }
     .del:hover{ filter:brightness(.95); }
 
     .pagination{display:flex;justify-content:center;gap:10px;margin-top:12px}
-    .pagination button{padding:6px 10px;border-radius:6px;border:none;background:var(--blue);color:#fff}
-    .pagination button:disabled{background:#a0a0a0}
+    .pagination button{padding:6px 10px;border-radius:6px;border:none;background:var(--blue);color:#fff;cursor:pointer}
+    .pagination button:disabled{background:#a0a0a0;cursor:default}
 
-    /* modal */
-    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center}
+    /* Modal */
+    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:1000}
     .modal{background:#fff;padding:18px;border-radius:10px;max-width:420px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.15)}
     .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
     .btn.secondary{background:#6c757d}
 
-
-    
+    /* Footer Styling */
+    .app-footer {
+      flex-shrink: 0;
+      padding: 20px;
+      text-align: center;
+      color: #5b6b6b;
+      font-size: 13px;
+      background: transparent;
+    }
   </style>
 </head>
 <body>
@@ -62,7 +89,7 @@
     <div>Departments List</div>
     <div>
       <a href="/admin/dashboard" style="color:#fff;text-decoration:none;margin-right:12px">Dashboard</a>
-      <a href="/admin/departments/create" style="color:#fff;text-decoration:none">Creat Departments </a>
+      <a href="/admin/departments/create" style="color:#fff;text-decoration:none">Create Department</a>
     </div>
   </header>
 
@@ -105,7 +132,6 @@
             <td><%= dep.address %></td>
             <td class="count"><%= dep.userCount %></td>
             <td>
-              <!-- edit is an anchor but styled exactly like delete (no underline, same block look) -->
               <a class="btn edit" href="/admin/departments/edit/<%= dep._id %>">Edit</a>
               <button class="btn del js-delete" data-id="<%= dep._id %>" data-name="<%= dep.name %>">Delete</button>
             </td>
@@ -114,14 +140,17 @@
       </tbody>
     </table>
 
-
-    <!-- pegination -->
     <div class="pagination">
       <button id="prev">Prev</button>
       <div id="pageInfo">Page <span id="page">1</span> of <span id="pages">1</span></div>
       <button id="next">Next</button>
     </div>
   </main>
+
+  <footer class="app-footer">
+    <div style="font-weight:800; color:#222; margin-bottom: 4px;">University Management</div>
+    <div>© <%= new Date().getFullYear() %> Your University Dashboard</div>
+  </footer>
 
   <div id="backdrop" class="backdrop" role="dialog" aria-modal="true">
     <div class="modal">
@@ -135,7 +164,7 @@
   </div>
 
   <script>
-    // Simple client search + pagination
+    // Simple client search + pagination logic
     const rowsPerPage = 10;
     const tbody = document.querySelector('#table tbody');
     let allRows = Array.from(tbody.querySelectorAll('tr'));
@@ -162,14 +191,12 @@
       const q = e.target.value.trim().toLowerCase();
       filtered = allRows.filter(r => (r.querySelector('.name').innerText.toLowerCase().includes(q)));
       page = 1; render();
-      // keep hidden input in sync for server-side filter submissions
       document.getElementById('hiddenQ').value = e.target.value;
     });
 
     prev.addEventListener('click', () => { if (page > 1) { page--; render(); } });
     next.addEventListener('click', () => { page++; render(); });
 
-    // Delete modal + fetch
     const backdrop = document.getElementById('backdrop');
     const modalTitle = document.getElementById('modalTitle');
     const modalText = document.getElementById('modalText');
@@ -208,7 +235,8 @@
       finally { confirm.disabled = false; confirm.textContent = 'Delete'; backdrop.style.display = 'none'; toDelete = null; }
     };
 
-    attachDeletes(); render();
+    attachDeletes(); 
+    render();
   </script>
 </body>
 </html>

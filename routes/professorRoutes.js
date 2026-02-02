@@ -179,9 +179,62 @@ router.get("/assignments/:id/review", verifyProfessor, reviewHandler);
 router.get("/professor/assignments/:id/review", verifyProfessor, reviewHandler);
 
 /* =================================================
-   APPROVE / REJECT ASSIGNMENT
+   APPROVE / REJECT ASSIGNMENT (ORIGINAL)
 ================================================= */
 router.post("/assignments/:id/decision", verifyProfessor, async (req, res) => {
+  try {
+    const { status, remarks } = req.body;
+
+    if (!["Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid action" });
+    }
+
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      reviewerId: req.professor._id
+    });
+
+    if (!assignment) {
+      return res.status(404).json({ message: "Assignment not found" });
+    }
+
+    assignment.reviewHistory ||= [];
+    assignment.status = status;
+    assignment.rejectionRemarks = status === "Rejected" ? remarks : "";
+
+    assignment.reviewHistory.push({
+      action: status,
+      professorId: req.professor._id,
+      professorName: req.professor.name,
+      remarks
+    });
+
+    await assignment.save();
+
+    await Notification.create({
+      userId: assignment.user,
+      title: `Assignment ${status}`,
+      message: `Your assignment "${assignment.title}" has been ${status.toLowerCase()}.`,
+      assignmentId: assignment._id
+    });
+
+    res.json({
+      message:
+        status === "Approved"
+          ? "Assignment approved successfully"
+          : "Assignment rejected successfully"
+    });
+
+  } catch (err) {
+    console.error("Decision error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* =================================================
+   🔥 ALIAS (FIX APPROVE / REJECT 404)
+================================================= */
+router.post("/professor/assignments/:id/decision", verifyProfessor, async (req, res) => {
   try {
     const { status, remarks } = req.body;
 

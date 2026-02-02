@@ -15,24 +15,48 @@
       --modal-overlay: rgba(0,0,0,0.45);
     }
     * { box-sizing: border-box; margin:0; padding:0; }
-    body { font-family: "Segoe UI", sans-serif; background: var(--bg); color:#222; min-height:100vh; padding-bottom:80px; }
+    
+    body { 
+      font-family: "Segoe UI", sans-serif; 
+      background: var(--bg); 
+      color:#222; 
+      min-height: 100vh; 
+      display: flex;
+      flex-direction: column; 
+    }
 
-    /* topbar + menu (HEADER ONLY CHANGES) */
+    /* --- ANIMATION DEFINITIONS --- */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Topbar */
     .topbar {
       background: var(--blue);
       color: #fff;
       height: var(--topbar-height);
-      /* Use grid to guarantee perfect vertical alignment and centered title */
       display: grid;
-      grid-template-columns: auto 1fr auto; /* left / center / right */
-      align-items: center;                   /* vertical centering */
+      grid-template-columns: auto 1fr auto; 
+      align-items: center;                  
       padding: 0 18px;
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    /* Menu button kept in normal flow, vertically centered by grid */
     .menu-btn {
       position: relative;
       width:44px;
@@ -47,62 +71,87 @@
       background: transparent;
       border: none;
       padding:0;
-      margin: 0;        /* ensure it doesn't shift vertically */
+      margin: 0;        
       align-self: center;
-      justify-self: start; /* place in left column */
+      justify-self: start; 
     }
-    .menu-btn:hover { background: rgba(255,255,255,0.06); }
+    .menu-btn:hover { background: rgba(255,255,255,0.1); }
     .menu-btn .bars { display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center; pointer-events: none; }
     .menu-btn .bars span { display:block; width:20px; height:2.6px; background:white; border-radius:2px; transition: transform .18s, opacity .12s; }
-    .menu-btn.open .bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .menu-btn.open .bars span:nth-child(1) { transform: translateY(8.5px) rotate(45deg); }
     .menu-btn.open .bars span:nth-child(2) { opacity: 0; }
-    .menu-btn.open .bars span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .menu-btn.open .bars span:nth-child(3) { transform: translateY(-8.5px) rotate(-45deg); }
 
-    /* Center title - horizontally centered within the center grid column */
     .topbar .title {
-      position: static;
-      transform: none;
       font-weight:800;
       font-size:20px;
       letter-spacing:0.2px;
       text-align:center;
-      pointer-events: none;
       color: #fff;
-      justify-self: center; /* center in middle column */
+      justify-self: center; 
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      padding: 0 12px; /* small horizontal padding so it doesn't collide on tiny widths */
+      padding: 0 12px; 
     }
 
-    /* Right side aligned to the right grid column, vertically centered */
     .topbar .right {
-      position: relative;
       display:flex;
       align-items:center;
       gap:14px;
-      z-index:1200;
-      justify-self: end; /* place in right column */
-      margin: 0;
+      justify-self: end; 
     }
 
     .hello { font-size:15px; color:#fff; white-space:nowrap; }
     .hello .name { color:#dcecff; font-weight:700; margin-left:6px; }
-    /* removed topbar logout button per request */
 
-    /* rest of your original CSS unchanged */
-    .left-space { position:fixed; left:0; top:var(--topbar-height); bottom:0; width:var(--left-column-width); display:flex; align-items:flex-start; justify-content:center; padding-top:18px; z-index:20; pointer-events:none; }
-
-    /* main content */
-    .content { margin-top: calc(var(--topbar-height) + 20px); margin-left: var(--left-column-width); padding: 18px; max-width: 1400px; margin-right: auto; margin-bottom: 40px; transition: filter .25s ease, opacity .25s ease; }
+    /* Content Area */
+    .content { 
+      flex: 1 0 auto; 
+      margin-top: calc(var(--topbar-height) + 20px);
+      padding: 18px; 
+      max-width: 1200px; 
+      width: 95%;
+      margin-left: auto;
+      margin-right: auto;
+      transition: filter .25s ease, opacity .25s ease; 
+    }
+    
     body.sidebar-open .content { filter: blur(3px); opacity: 0.35; pointer-events: none; }
     body.sidebar-open::before { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.18); z-index: 1100; }
 
-    .wrap { background:white; border-radius:10px; padding:18px; box-shadow:0 8px 18px rgba(0,0,0,0.04); }
-    h1 { margin:0 0 18px; font-size:22px; }
+    .wrap { 
+      background:white; 
+      border-radius:10px; 
+      padding:18px; 
+      box-shadow:0 8px 18px rgba(0,0,0,0.04); 
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    h1 { margin:0 0 18px; font-size:22px; text-align: center; }
 
+    /* Card Animations */
     .cards { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
-    .card { padding:18px; border-radius:10px; min-width:160px; flex:1 1 180px; box-shadow:0 3px 10px rgba(0,0,0,0.05); }
+    .card { 
+      padding:18px; 
+      border-radius:10px; 
+      min-width:160px; 
+      flex:1 1 180px; 
+      box-shadow:0 3px 10px rgba(0,0,0,0.05); 
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out forwards;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+    .card:nth-child(4) { animation-delay: 0.4s; }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+    }
+
     .card h3 { margin:0 0 8px; font-size:13px; color:#666; }
     .card p { margin:0; font-size:22px; font-weight:800; color:#111; }
     .card.draft { background: #eef1ff; }
@@ -110,183 +159,196 @@
     .card.approved { background: #fdfde7; }
     .card.rejected { background: #ffecec; }
 
+    /* Actions & Buttons */
     .actions { display:flex; justify-content:flex-end; gap:10px; margin-bottom:12px; }
-    .btn { padding:8px 12px; background:var(--blue); color:#fff; border-radius:8px; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:8px; border: none; outline: none; box-shadow: none; cursor: pointer; }
-    .btn:hover { filter: brightness(0.96); }
-    .btn:focus { outline: none; box-shadow: none; }
+    .btn { 
+      padding:8px 12px; 
+      background:var(--blue); 
+      color:#fff; 
+      border-radius:8px; 
+      text-decoration:none; 
+      font-weight:700; 
+      display:inline-flex; 
+      align-items:center; 
+      gap:8px; 
+      border: none; 
+      cursor: pointer; 
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .btn:hover { background: #3a5591; transform: scale(1.03); }
+    .btn:active { transform: scale(0.98); }
 
-    /* Recent submissions list */
+    /* Table */
     .recent { background: var(--card); padding:12px; border-radius:8px; box-shadow:0 3px 10px rgba(0,0,0,0.05); overflow-x:auto; }
     .recent table { width:100%; border-collapse:collapse; table-layout: fixed; min-width:520px; }
     .recent thead th { text-align:left; font-size:14px; padding:12px; color:#333; font-weight:700; }
-    .recent th.title { width:60%; }
-    .recent th.status, .recent th.date { width:20%; text-align:left; }
     .recent tbody td { padding:12px; border-bottom:1px solid #eee; font-size:14px; vertical-align:middle; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .recent tbody tr td.title-col { padding-right:6px; }
-    .recent tbody tr td.status-col { text-align:left; }f08a24
-    .recent tbody tr td.date-col { text-align:left; color:#333; opacity:0.9; }f08a24
-
+    .recent tbody tr { transition: background-color 0.2s ease; }
+    .recent tbody tr:hover { background-color: #f8faff; }
+    
     .status-approved { color:#2f9e44; font-weight:700; background:#e9f7ee; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
     .status-rejected { color:#c92a2a; font-weight:700; background:#fdecea; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
     .status-submitted { color:#2f9e44; font-weight:700; background:#fff7e6; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
     .status-draft { color:#5065d6; background:#eef2ff; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
 
-    /* Navigation panel */
-    .nav-panel { position: fixed; top: calc(var(--topbar-height) + 16px); left: calc(var(--left-column-width) + 30px); width:220px; background:#fff; border-radius:8px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,0.12); transform: translateX(-18px); opacity: 0; transition: transform .28s ease, opacity .22s ease; z-index:1250; pointer-events: none; }
+    /* Footer */
+    footer {
+      flex-shrink: 0; 
+      text-align: center;
+      padding: 40px 0 30px 0; 
+      width: 100%;
+      background: transparent;
+    }
+    .footer-brand { font-weight: 800; font-size: 14px; color: #222; margin-bottom: 4px; }
+    .footer-copyright { font-size: 13px; color: #666; }
+
+    /* Navigation Panel */
+    .nav-panel { 
+      position: fixed; 
+      top: calc(var(--topbar-height) + 16px); 
+      left: 20px; 
+      width:240px; 
+      background:#fff; 
+      border-radius:12px; 
+      padding:12px; 
+      box-shadow:0 10px 30px rgba(0,0,0,0.12); 
+      transform: translateX(-30px); 
+      opacity: 0; 
+      transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1), opacity .25s ease; 
+      z-index:1250; 
+      pointer-events: none; 
+    }
     .nav-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
-    .nav-item { background:#f5f6f8; padding:10px 12px; border-radius:8px; margin-bottom:10px; font-weight:700; cursor:pointer; }
-    .nav-item:hover { background:#eef3ff; }
+    
+    .nav-item { 
+      background:#f5f6f8; 
+      padding:10px 12px; 
+      border-radius:8px; 
+      margin-bottom:10px; 
+      font-weight:700; 
+      cursor:pointer; 
+      transition: all 0.2s ease;
+    }
+    .nav-item:hover:not(.active) { padding-left: 18px; background: #ebedf2; color: var(--blue); }
+    .nav-item.active { background: var(--blue); color: #fff; }
 
-    /* Make the Dashboard item use the same background as header when active */
-    .nav-item.active { background: var(--blue); color: #fff; box-shadow: 0 6px 14px rgba(75,108,183,0.12); }
-
-    .assignments-panel { position: fixed; top: calc(var(--topbar-height) + 8px); right: 18px; width: 640px; max-width: calc(100% - 36px); height: calc(100% - 100px); background: white; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.15); transform: translateY(-6px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index:2000; display:flex; flex-direction:column; overflow:auto; padding-bottom: 18px; }
-    .assignments-panel.open { opacity:1; transform: translateY(0); pointer-events:auto; }
-
-    /* user panel inside nav (added) */
+    /* MODIFIED USER SECTION */
     .nav-user-panel { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; margin-bottom:12px; border-radius:8px; background: linear-gradient(180deg,#f6f8ff,#ffffff); border: 1px solid rgba(75,108,183,0.06); }
-    .nav-user-info { display:flex; flex-direction:column; min-width:0; }
-    .nav-user-info .name { font-weight:800; color:#18304a; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .nav-user-info .role { font-size:12px; color:#6b6b6b; font-weight:700; margin-top:2px; }
-    .nav-logout-btn { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:800; color:white; background: linear-gradient(180deg,#e25a57, #d23c37); box-shadow: 0 8px 18px rgba(194,48,48,0.14); }
+    .nav-user-info .name { font-weight: 800; font-size: 15px; color: #111; } /* Added bold weight and slightly larger font */
+    .nav-user-info .role { font-size: 12px; color: #777; }
+    .nav-logout-btn { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:800; color:white; background: linear-gradient(180deg,#e25a57, #d23c37); transition: transform 0.2s; }
+    .nav-logout-btn:hover { transform: scale(1.05); }
 
-    .modal-overlay-global { display:none; position: fixed; inset: 0; background: var(--modal-overlay); z-index:2200; align-items:center; justify-content:center; }
+    /* --- COMPACT LOGOUT MODAL --- */
+    .modal-overlay-global { 
+      display:none; 
+      position: fixed; 
+      inset: 0; 
+      background: var(--modal-overlay); 
+      z-index:2200; 
+      align-items:center; 
+      justify-content:center;
+      backdrop-filter: blur(3px);
+    }
     .modal-overlay-global.open { display:flex; }
-    .modal-box {
-      width: 360px;
-      max-width: calc(100% - 40px);
-      background: #fff;
-      border-radius:12px;
-      padding:22px 22px;
-      box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+    .modal-box { 
+      width: 340px; 
+      background: #fff; 
+      border-radius: 20px; 
+      padding: 30px 15px; 
       text-align:center;
-      animation: fadeIn .14s ease both;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      transform: scale(0.9);
+      transition: transform 0.2s ease;
     }
-    .modal-box h3 { font-size:20px; margin-bottom:8px; font-weight:800; color:#222; }
-    .modal-box p { margin:0; color:#666; }
-    .modal-actions { margin-top:18px; display:flex; gap:14px; justify-content:center; }
-    .modal-btn {
-      padding:10px 18px;
-      border-radius:12px;
-      font-weight:800;
-      border: none;
-      cursor:pointer;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      min-width:84px;
-    }
-    .modal-btn.no { background:#d9534f; color:white; }
-    .modal-btn.yes { background:#28a745; color:white; }
-    .modal-btn:focus { outline: 3px solid rgba(0,0,0,0.06); }
+    .modal-overlay-global.open .modal-box { transform: scale(1); }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-box h2 { 
+      font-size: 21px; 
+      font-weight: 800; 
+      color: #000; 
+      margin-bottom: 5px;
+      line-height: 1.2;
+    }
+    .modal-box p {
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 22px;
+    }
+    .modal-btn-container {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .modal-btn {
+      padding: 9px 28px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+    }
+    .modal-btn.no { background: #f0f0f0; color: #000; }
+    .modal-btn.yes { background: #e56b6b; color: #fff; }
 
     @media (max-width: 900px) {
-      .content { margin-left: 12px; padding:12px; margin-top: calc(var(--topbar-height) + 22px); }
-      .nav-panel { left: 18px; top:86px; }
-      .assignments-panel { right:12px; width: calc(100% - 24px); top:86px; height: calc(100% - 110px); }
+      .content { width: 92%; padding:12px; }
       .topbar .title { font-size:16px; }
-      .topbar .right { gap:8px; }
-      .menu-btn { width:40px; height:40px; }
-      .recent th.title { width:55%; }
-      .recent th.status, .recent th.date { width:22.5%; }
     }
   </style>
 </head>
 <body data-user="<%= user && user.name ? user.name : (user && user.email ? user.email : '') %>">
 
-  <header class="topbar" role="banner" aria-label="Top navigation">
-    <button id="menuButton" class="menu-btn" title="Menu" aria-expanded="false" aria-controls="navPanel" aria-label="Toggle menu">
-      <div class="bars" aria-hidden="true">
-        <span></span><span></span><span></span>
-      </div>
+  <header class="topbar">
+    <button id="menuButton" class="menu-btn" title="Menu">
+      <div class="bars"><span></span><span></span><span></span></div>
     </button>
-
-    <div class="title" aria-hidden="true">Student Dashboard</div>
-
-    <div class="right" aria-hidden="false">
+    <div class="title">Student Dashboard</div>
+    <div class="right">
       <div class="hello">Hello, <span class="name"><%= user && user.name ? user.name : 'Student' %></span></div>
-      <!-- removed topbar logout button as requested -->
     </div>
   </header>
 
-  <div class="left-space" aria-hidden="true"></div>
-  <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
-
-  <div id="navPanel" class="nav-panel" aria-hidden="true">
-    <!-- user panel inside nav (logout lives here) -->
-    <div class="nav-user-panel" role="region" aria-label="User panel">
+  <div id="navPanel" class="nav-panel">
+    <div class="nav-user-panel">
       <div class="nav-user-info">
         <div id="navUserName" class="name"><%= user && user.name ? user.name : 'Student' %></div>
-        <div id="navUserRole" class="role">Student</div>
+        <div class="role">Student</div>
       </div>
-      <button id="navLogoutBtn" class="nav-logout-btn" type="button" aria-haspopup="dialog" aria-controls="logoutModalOverlay">Logout</button>
+      <button id="navLogoutBtn" class="nav-logout-btn">Logout</button>
     </div>
-
     <div id="navDashboard" class="nav-item active">Dashboard</div>
     <div id="navAllAssignments" class="nav-item">View All Assignments</div>
     <div id="navProfile" class="nav-item">Profile</div>
   </div>
 
-  <div class="content" id="mainContent" role="main">
+  <div class="content" id="mainContent">
     <div class="wrap">
       <h1>Assignment Dashboard</h1>
-
       <div class="cards">
-        <div class="card draft">
-          <h3>Draft</h3>
-          <p><%= counts.Draft %></p>
-        </div>
-        <div class="card submitted">
-          <h3>Submitted</h3>
-          <p><%= counts.Submitted %></p>
-        </div>
-        <div class="card approved">
-          <h3>Approved</h3>
-          <p><%= counts.Approved %></p>
-        </div>
-        <div class="card rejected">
-          <h3>Rejected</h3>
-          <p><%= counts.Rejected %></p>
-        </div>
+        <div class="card draft"><h3>Draft</h3><p><%= counts.Draft %></p></div>
+        <div class="card submitted"><h3>Submitted</h3><p><%= counts.Submitted %></p></div>
+        <div class="card approved"><h3>Approved</h3><p><%= counts.Approved %></p></div>
+        <div class="card rejected"><h3>Rejected</h3><p><%= counts.Rejected %></p></div>
       </div>
-
       <div class="actions">
-        <!-- Only single button now -->
         <a href="/student/assignments/upload" class="btn">Upload New Assignment</a>
       </div>
-
-      <h2 style="margin:0 0 12px">Recent Submissions</h2>
-      <div class="recent" id="recentList" role="region" aria-label="Recent submissions">
+      <h2 style="margin:12px 0">Recent Submissions</h2>
+      <div class="recent">
         <table>
           <thead>
-            <tr>
-              <th class="title">Title</th>
-              <th class="status">Status</th>
-              <th class="date">Date</th>
-            </tr>
+            <tr><th>Title</th><th>Status</th><th>Date</th></tr>
           </thead>
           <tbody>
             <% for (let i = 0; i < Math.min(recent.length || 0, 5); i++) {
                  const r = recent[i]; %>
               <tr>
-                <td class="title-col" title="<%= r.title %>">
-                  <%= r.title %>
-                </td>
-                <td class="status-col" aria-label="Status">
-                  <% if (r.status === 'Approved') { %>
-                    <span class="status-approved">Approved</span>
-                  <% } else if (r.status === 'Rejected') { %>
-                    <span class="status-rejected">Rejected</span>
-                  <% } else if (r.status === 'Draft') { %>
-                    <span class="status-draft">Draft</span>
-                  <% } else { %>
-                    <span class="status-submitted"><%= r.status %></span>
-                  <% } %>
-                </td>
-                <td class="date-col" aria-label="Submitted date"><%= new Date(r.createdAt).toLocaleString() %></td>
+                <td><%= r.title %></td>
+                <td><span class="status-<%= r.status.toLowerCase() %>"><%= r.status %></span></td>
+                <td><%= new Date(r.createdAt).toLocaleString() %></td>
               </tr>
             <% } %>
-
             <% if (!recent || recent.length === 0) { %>
               <tr><td colspan="3">No recent submissions</td></tr>
             <% } %>
@@ -296,25 +358,18 @@
     </div>
   </div>
 
-  <div id="assignmentsPanel" class="assignments-panel" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="panel-header" style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #f2f2f2;">
-      <div style="font-weight:800;">View All Assignments</div>
-      <div>
-        <button id="closeAssignments" class="panel-close" aria-label="Close assignments panel" style="background:none;border:none;font-size:18px;cursor:pointer;">✕</button>
-      </div>
-    </div>
-    <div class="panel-body" id="panelBody" style="padding:18px;">
-      <div class="empty-msg">No assignments uploaded yet. Upload now!</div>
-    </div>
-  </div>
+  <footer>
+    <div class="footer-brand">University Management</div>
+    <div class="footer-copyright">© 2026 Your University Dashboard</div>
+  </footer>
 
-  <div id="logoutModalOverlay" class="modal-overlay-global" aria-hidden="true">
-    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="logoutTitle" aria-describedby="logoutDesc">
-      <h3 id="logoutTitle">Are you sure you want to logout?</h3>
-      <p id="logoutDesc">This will end your session.</p>
-      <div class="modal-actions" role="group" aria-label="Logout choices">
-        <button id="cancelLogout" class="modal-btn no" type="button">No</button>
-        <button id="confirmLogout" class="modal-btn yes" type="button">Yes</button>
+  <div id="logoutModalOverlay" class="modal-overlay-global">
+    <div class="modal-box">
+      <h2>Are you sure you want to logout?</h2>
+      <p>This will end your session.</p>
+      <div class="modal-btn-container">
+        <button id="cancelLogout" class="modal-btn no">No</button>
+        <button id="confirmLogout" class="modal-btn yes">Yes</button>
       </div>
     </div>
   </div>
@@ -323,144 +378,36 @@
     (function() {
       const menuButton = document.getElementById('menuButton');
       const navPanel = document.getElementById('navPanel');
-      const menuOverlay = document.getElementById('menuOverlay');
 
       function openNav() {
         navPanel.classList.add('open');
-        navPanel.setAttribute('aria-hidden', 'false');
-        menuOverlay.style.display = 'block';
-        menuOverlay.setAttribute('aria-hidden', 'false');
-        menuButton.setAttribute('aria-expanded', 'true');
         menuButton.classList.add('open');
         document.body.classList.add('sidebar-open');
       }
       function closeNav() {
         navPanel.classList.remove('open');
-        navPanel.setAttribute('aria-hidden', 'true');
-        menuOverlay.style.display = 'none';
-        menuOverlay.setAttribute('aria-hidden', 'true');
-        menuButton.setAttribute('aria-expanded', 'false');
         menuButton.classList.remove('open');
         document.body.classList.remove('sidebar-open');
       }
 
       menuButton.addEventListener('click', (e) => {
         e.stopPropagation();
-        const shown = navPanel.classList.contains('open');
-        if (shown) closeNav(); else openNav();
+        if (navPanel.classList.contains('open')) closeNav(); else openNav();
       });
-
-      menuOverlay.addEventListener('click', () => { closeNav(); });
 
       document.addEventListener('click', (e) => {
-        if (!navPanel.contains(e.target) && !menuButton.contains(e.target) && navPanel.classList.contains('open')) {
-          closeNav();
-        }
+        if (!navPanel.contains(e.target) && !menuButton.contains(e.target)) closeNav();
       });
 
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && navPanel.classList.contains('open')) closeNav();
-      });
+      document.getElementById('navDashboard').addEventListener('click', () => { closeNav(); window.scrollTo({top: 0, behavior: 'smooth'}); });
+      document.getElementById('navProfile').addEventListener('click', () => { window.location.href = '/student/profile'; });
+      document.getElementById('navAllAssignments').addEventListener('click', () => { window.location.href = '/student/assignments'; });
 
-      document.getElementById('navDashboard').addEventListener('click', () => { closeNav(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
-      document.getElementById('navProfile').addEventListener('click', () => { closeNav(); window.location.href = '/student/profile'; });
-      document.getElementById('navAllAssignments').addEventListener('click', () => { closeNav(); window.location.href = '/student/assignments'; });
-    })();
-
-    (function() {
-      const closeAssignmentsBtn = document.getElementById('closeAssignments');
-      const assignmentsPanel = document.getElementById('assignmentsPanel');
-
-      closeAssignmentsBtn.addEventListener('click', () => {
-        assignmentsPanel.classList.remove('open');
-        assignmentsPanel.setAttribute('aria-hidden', 'true');
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && assignmentsPanel.classList.contains('open')) {
-          assignmentsPanel.classList.remove('open');
-          assignmentsPanel.setAttribute('aria-hidden', 'true');
-        }
-      });
-    })();
-
-    // setup user display in topbar and nav (title-casing, admin-like logic)
-    (function() {
-      const raw = document.body.getAttribute('data-user') || '';
-      function toTitleCase(str) {
-        return str.split(/[\s._]+/).map(s => s ? (s[0].toUpperCase() + s.slice(1).toLowerCase()) : '').join(' ');
-      }
-      let displayName = raw.trim();
-      if (!displayName) displayName = 'Student';
-      else {
-        // if email, take before @
-        if (displayName.includes('@')) displayName = displayName.split('@')[0];
-        displayName = toTitleCase(displayName);
-      }
-
-      const topNameEl = document.querySelector('.topbar .name');
-      const navNameEl = document.getElementById('navUserName');
-      if (topNameEl) topNameEl.textContent = displayName;
-      if (navNameEl) navNameEl.textContent = displayName;
-
-      // set role text
-      const navRoleEl = document.getElementById('navUserRole');
-      if (navRoleEl) navRoleEl.textContent = 'Student';
-    })();
-
-    // Logout modal wiring (logout button now inside nav panel)
-    (function() {
       const navLogoutBtn = document.getElementById('navLogoutBtn');
       const logoutOverlay = document.getElementById('logoutModalOverlay');
-      const cancelBtn = document.getElementById('cancelLogout');
-      const confirmBtn = document.getElementById('confirmLogout');
-      const mainContent = document.getElementById('mainContent');
-      let lastFocused = null;
-
-      function openModal() {
-        lastFocused = document.activeElement;
-        logoutOverlay.classList.add('open');
-        logoutOverlay.setAttribute('aria-hidden', 'false');
-        mainContent.setAttribute('aria-hidden', 'true');
-        // focus cancel for accessibility
-        cancelBtn.focus();
-        document.body.style.overflow = 'hidden';
-      }
-
-      function closeModal() {
-        logoutOverlay.classList.remove('open');
-        logoutOverlay.setAttribute('aria-hidden', 'true');
-        mainContent.removeAttribute('aria-hidden');
-        if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
-        document.body.style.overflow = '';
-      }
-
-      if (navLogoutBtn) {
-        navLogoutBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          openModal();
-        });
-      }
-
-      cancelBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeModal();
-      });
-
-      confirmBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = '/logout';
-      });
-
-      logoutOverlay.addEventListener('click', (e) => {
-        if (e.target === logoutOverlay) closeModal();
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && logoutOverlay.classList.contains('open')) {
-          closeModal();
-        }
-      });
+      navLogoutBtn.addEventListener('click', () => logoutOverlay.classList.add('open'));
+      document.getElementById('cancelLogout').addEventListener('click', () => logoutOverlay.classList.remove('open'));
+      document.getElementById('confirmLogout').addEventListener('click', () => window.location.href = '/logout');
     })();
   </script>
 </body>

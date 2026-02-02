@@ -13,6 +13,20 @@ html,body{height:100%}
 body{
   font-family:"Segoe UI",sans-serif;
   background:linear-gradient(135deg,#e9f0ff,#f3f5f9);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 /* NAVBAR */
@@ -25,14 +39,15 @@ body{
   position:fixed;
   top:0;left:0;right:0;
   z-index:100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* MENU BUTTON */
 .menu-toggle{
   width:44px;height:44px;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;
   border-radius:8px;
+  transition: background 0.3s;
 }
 .menu-toggle:hover{background:rgba(255,255,255,.1)}
 
@@ -42,14 +57,12 @@ body{
   background:white;border-radius:2px;
 }
 
-/* TITLE */
 .navbar .title{
   position:absolute;
   left:50%;transform:translateX(-50%);
   color:#fff;font-weight:800;font-size:20px;
 }
 
-/* RIGHT TEXT */
 .navbar .right{
   margin-left:auto;
   color:white;
@@ -59,22 +72,21 @@ body{
 /* SIDEBAR */
 .sidebar{
   position:fixed;
-  top:64px;
-  left:-260px;
+  top:80px;
+  left:-280px;
   width:260px;
-  transition:left .25s ease;
+  transition:left .3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index:90;
 }
-body.sidebar-open .sidebar{left:0}
+body.sidebar-open .sidebar{left:16px;}
 
 .sidebar-card{
   background:white;
   padding:14px;
   border-radius:14px;
-  box-shadow:0 12px 30px rgba(0,0,0,.1);
+  box-shadow:0 12px 30px rgba(0,0,0,.15);
 }
 
-/* USER PANEL */
 .user-panel{
   background:#f6f8ff;
   padding:12px;
@@ -95,7 +107,6 @@ body.sidebar-open .sidebar{left:0}
   cursor:pointer;
 }
 
-/* SIDEBAR LINKS */
 .sidebar a{
   display:block;
   padding:12px;
@@ -107,39 +118,32 @@ body.sidebar-open .sidebar{left:0}
   text-decoration:none;
   color:#222;
   cursor:pointer;
+  transition: all 0.2s ease;
 }
-.sidebar a:hover{background:#e9ecf5}
-.sidebar a.active{background:#4b6cb7;color:white}
+.sidebar a:hover{background:#e9ecf5; padding-left: 20px;}
+.sidebar a.active{background:#4b6cb7;color:white;}
 
 /* MAIN */
 .main{
   margin-top:64px;
   padding:24px;
-  transition:.25s;
+  transition:.3s;
+  flex: 1 0 auto;
 }
-body.sidebar-open .main{
-  margin-left:260px;
-  filter:blur(3px);
-  opacity:.35;
+body.sidebar-open .main {
+  filter:blur(4px);
+  opacity:.4;
   pointer-events:none;
 }
 
-/* OVERLAY */
-body.sidebar-open::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:rgba(75,108,183,.25);
-  z-index:45;
-}
-
-/* CONTAINER */
 .container{
   max-width:1100px;
   margin:auto;
   background:white;
   border-radius:14px;
   padding:28px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  animation: scaleIn 0.5s ease-out;
 }
 
 /* DASHBOARD CARDS */
@@ -155,48 +159,88 @@ body.sidebar-open::before{
   border-radius:14px;
   text-align:center;
   font-weight:800;
+  transition: transform 0.3s ease;
+  animation: fadeInUp 0.5s ease-out both;
 }
-.card.pending{background:#e8f2ff}
-.card.approved{background:#e9fdf0}
-.card.rejected{background:#fff3e7}
-.card.total{background:#f6ecff}
+.card:hover { transform: translateY(-5px); }
 
-.card h3{font-size:14px;color:#666}
-.card p{font-size:30px}
+.card.pending{background:#e8f2ff; animation-delay: 0.1s;}
+.card.approved{background:#e9fdf0; animation-delay: 0.2s;}
+.card.rejected{background:#fff3e7; animation-delay: 0.3s;}
+.card.total{background:#f6ecff; animation-delay: 0.4s;}
 
-/* TABLE */
-table{width:100%;border-collapse:collapse}
-th,td{
-  padding:12px;
-  border-bottom:1px solid #ddd;
-  text-align:center;
+.card h3{font-size:13px;color:#666; text-transform: uppercase;}
+.card p{font-size:32px;}
+
+/* TABLE STYLING */
+.table-section {
+  animation: fadeInUp 0.6s ease-out 0.5s both;
 }
-th{background:#f3f5f9}
-
-/* BADGES */
-.badge{
-  padding:4px 12px;
-  border-radius:14px;
-  color:white;
-  font-weight:700;
-}
-.badge.blue{background:#4b6cb7}
-.badge.green{background:#2e9a3f}
-
-/* BUTTON */
-.btn{
-  padding:6px 14px;
-  border-radius:6px;
-  font-weight:700;
-  color:white;
-  text-decoration:none;
-  background:#2e9a3f;
-  cursor:pointer;
+.table-section h1 {
+  font-size: 32px;
+  margin-bottom: 24px;
+  font-weight: 800;
 }
 
-/* ========================= */
-/* ✅ LOGOUT CONFIRM MODAL */
-/* ========================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 12px;
+  color: #666;
+  font-size: 14px;
+  font-weight: 700;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+/* BADGES & BUTTONS */
+.status-pill {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  min-width: 100px;
+}
+.status-pill.approved { background: #2e9a3f; }
+.status-pill.pending { background: #4b6cb7; }
+
+.btn-review {
+  display: inline-block;
+  padding: 6px 24px;
+  border-radius: 8px;
+  background: #2e9a3f;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+.btn-review:hover {
+  opacity: 0.9;
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 30px 0;
+  width: 100%;
+}
+.footer-brand { font-weight: 800; font-size: 14px; margin-bottom: 2px; }
+.footer-copyright { font-size: 13px; color: #666; }
+
+/* MODAL */
 .logout-overlay{
   position:fixed;
   inset:0;
@@ -205,49 +249,26 @@ th{background:#f3f5f9}
   align-items:center;
   justify-content:center;
   z-index:200;
+  backdrop-filter: blur(2px);
 }
-
 .logout-modal{
   background:white;
   padding:26px;
   border-radius:14px;
   width:360px;
   text-align:center;
-  box-shadow:0 15px 40px rgba(0,0,0,.25);
+  animation: scaleIn 0.3s ease-out;
 }
 
-.logout-modal h2{
-  font-size:20px;
-  margin-bottom:6px;
+@media (max-width: 768px) {
+    .main { padding: 15px; }
+    .container { padding: 15px; }
 }
-
-.logout-modal p{
-  color:#666;
-  margin-bottom:18px;
-}
-
-.logout-actions{
-  display:flex;
-  justify-content:center;
-  gap:14px;
-}
-
-.logout-actions button{
-  border:none;
-  padding:8px 20px;
-  border-radius:20px;
-  font-weight:800;
-  cursor:pointer;
-}
-
-.btn-no{background:#e25a57;color:white}
-.btn-yes{background:#2e9a3f;color:white}
 </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <div class="navbar">
   <div id="menuBtn" class="menu-toggle">
     <div class="bars"><span></span><span></span><span></span></div>
@@ -256,95 +277,123 @@ th{background:#f3f5f9}
   <div class="right">Hello, <%= professorName %></div>
 </div>
 
-<!-- SIDEBAR -->
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-card">
-
     <div class="user-panel">
       <strong><%= professorName %></strong>
       <button id="logoutBtn" class="logout-btn">Logout</button>
     </div>
-
     <a id="navDashboard" class="active">Dashboard</a>
     <a id="navReviews">My Reviews</a>
     <a href="/professor/profile">Profile</a>
   </div>
 </nav>
 
-<!-- MAIN -->
 <main class="main">
   <div class="container">
 
     <div id="dashboardView">
-      <h1>Professor Dashboard</h1>
+      <div class="table-section">
+       
+        
+        <div class="overview">
+          <div class="card pending">
+            <h3>Pending</h3>
+            <p><%= counts.pending %></p>
+          </div>
+          <div class="card approved">
+            <h3>Approved</h3>
+            <p><%= counts.approved %></p>
+          </div>
+          <div class="card rejected">
+            <h3>Rejected</h3>
+            <p><%= counts.rejected %></p>
+          </div>
+          <div class="card total">
+            <h3>Total Reviewed</h3>
+            <p><%= counts.total %></p>
+          </div>
+        </div>
 
-      <div class="overview">
-        <div class="card pending">
-          <h3>Pending</h3>
-          <p><%= counts.pending %></p>
-        </div>
-        <div class="card approved">
-          <h3>Approved</h3>
-          <p><%= counts.approved %></p>
-        </div>
-        <div class="card rejected">
-          <h3>Rejected</h3>
-          <p><%= counts.rejected %></p>
-        </div>
-        <div class="card total">
-          <h3>Total Reviewed</h3>
-          <p><%= counts.total %></p>
+        <h2 style="margin: 20px 0 15px; font-size: 20px;">Recent Activity</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% allReviews.slice(0, 5).forEach(a => { %>
+                    <tr>
+                        <td><%= a.user?.name %></td>
+                        <td><%= a.title %></td>
+                        <td><span class="status-pill <%= a.status==='Approved'?'approved':'pending' %>"><%= a.status %></span></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
         </div>
       </div>
     </div>
 
     <div id="reviewsView" style="display:none">
-      <h1>My Reviews</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Student</th>
-            <th>Title</th>
-            <th>Submitted</th>
-            <th>Days</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-        <% allReviews.forEach(a=>{ %>
-          <tr>
-            <td><%= a.user?.name %></td>
-            <td><%= a.title %></td>
-            <td><%= new Date(a.submittedAt).toLocaleDateString() %></td>
-            <td><%= a.daysPending %></td>
-            <td>
-              <span class="badge <%= a.status==='Approved'?'green':'blue' %>">
-                <%= a.status %>
-              </span>
-            </td>
-            <td>
-              <a class="btn" href="/professor/assignments/<%= a._id %>/review">
-                Review
-              </a>
-            </td>
-          </tr>
-        <% }) %>
-        </tbody>
-      </table>
+      <div class="table-section">
+        <h1>My Reviews</h1>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Title</th>
+                <th>Submitted</th>
+                <th>Days</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+            <% allReviews.forEach(a=>{ %>
+              <tr>
+                <td><%= a.user?.name %></td>
+                <td><%= a.title %></td>
+                <td><%= new Date(a.submittedAt).toLocaleDateString() %></td>
+                <td><%= a.daysPending %></td>
+                <td>
+                  <span class="status-pill <%= a.status==='Approved'?'approved':'pending' %>">
+                    <%= a.status %>
+                  </span>
+                </td>
+                <td>
+                  <a class="btn-review" href="/professor/assignments/<%= a._id %>/review">
+                    Review
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
   </div>
 </main>
 
-<!-- ✅ LOGOUT MODAL -->
+<footer>
+  <div class="footer-brand">University Management</div>
+  <div class="footer-copyright">© 2026 Your University Dashboard</div>
+</footer>
+
 <div id="logoutOverlay" class="logout-overlay">
   <div class="logout-modal">
     <h2>Are you sure you want to logout?</h2>
-    <p>This will end your session.</p>
-    <div class="logout-actions">
-      <button class="btn-no" id="cancelLogout">No</button>
-      <button class="btn-yes" id="confirmLogout">Yes</button>
+    <p style="color:#666; margin: 10px 0 20px;">This will end your session.</p>
+    <div style="display:flex; justify-content:center; gap:12px;">
+      <button id="cancelLogout" style="border:none; padding:10px 24px; border-radius:20px; background:#f0f0f0; cursor:pointer; font-weight:700;">No</button>
+      <button id="confirmLogout" style="border:none; padding:10px 24px; border-radius:20px; background:#e25a57; color:white; cursor:pointer; font-weight:700;">Yes</button>
     </div>
   </div>
 </div>
@@ -365,7 +414,6 @@ document.addEventListener("click", e => {
   }
 });
 
-/* SIDEBAR NAV */
 const navDashboard = document.getElementById("navDashboard");
 const navReviews = document.getElementById("navReviews");
 const dashboardView = document.getElementById("dashboardView");
@@ -387,22 +435,10 @@ navReviews.onclick = () => {
   document.body.classList.remove("sidebar-open");
 };
 
-/* ✅ CUSTOM LOGOUT CONFIRM */
 const logoutOverlay = document.getElementById("logoutOverlay");
-const cancelLogout = document.getElementById("cancelLogout");
-const confirmLogout = document.getElementById("confirmLogout");
-
-logoutBtn.onclick = () => {
-  logoutOverlay.style.display = "flex";
-};
-
-cancelLogout.onclick = () => {
-  logoutOverlay.style.display = "none";
-};
-
-confirmLogout.onclick = () => {
-  window.location.href = "/logout";
-};
+logoutBtn.onclick = () => logoutOverlay.style.display = "flex";
+document.getElementById("cancelLogout").onclick = () => logoutOverlay.style.display = "none";
+document.getElementById("confirmLogout").onclick = () => window.location.href = "/logout";
 </script>
 
 </body>

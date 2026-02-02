@@ -93,10 +93,8 @@ textarea{
 
   <h3>Assignment File</h3>
 
-  <!-- Preview -->
   <iframe src="/uploads/<%= assignment.file.filename %>"></iframe>
 
-  <!-- Proper Download Button -->
   <a class="download-btn"
      href="/uploads/<%= assignment.file.filename %>"
      download>
@@ -109,12 +107,13 @@ textarea{
     placeholder="Enter remarks for the student (max 300 words)"></textarea>
 
   <div class="actions">
-    <button class="approve"
+    <!-- IMPORTANT: type="button" -->
+    <button type="button" class="approve"
       onclick="submitDecision('Approved')">
       ✓ Approve Assignment
     </button>
 
-    <button class="reject"
+    <button type="button" class="reject"
       onclick="submitDecision('Rejected')">
       ✗ Reject Assignment
     </button>
@@ -123,8 +122,7 @@ textarea{
 
 <script>
 function submitDecision(status){
-  const remarks =
-    document.getElementById("remarks").value.trim();
+  const remarks = document.getElementById("remarks").value.trim();
 
   if(remarks.split(/\s+/).length > 300){
     alert("Remarks must be within 300 words");
@@ -133,13 +131,27 @@ function submitDecision(status){
 
   fetch("/professor/assignments/<%= assignment._id %>/decision", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "same-origin",
     body: JSON.stringify({ status, remarks })
   })
-  .then(res => res.json())
+  .then(async res => {
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error("Server error: " + text);
+    }
+  })
   .then(data => {
-    alert(data.message);
+    alert(data.message || "Decision saved successfully");
     window.location.href = "/professor/dashboard";
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Something went wrong. Check console / server logs.");
   });
 }
 </script>
