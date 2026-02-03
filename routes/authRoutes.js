@@ -28,16 +28,21 @@ function redirectByRole(role) {
   }
 }
 
-// 🔐 Mail transporter for reset link emails
+/* =====================================================
+   🔐 Mail transporter (DISABLED ON RAILWAY)
+   Gmail SMTP is blocked on Railway and causes 502 errors
+   ===================================================== */
+/*
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: Number(process.env.SMTP_PORT) || 587,
   secure: false,
   auth: {
-    user: process.env.SMTP_USER, // your email
-    pass: process.env.SMTP_PASS  // your app password
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
 });
+*/
 
 router.get("/", (req, res) => res.redirect("/login"));
 
@@ -94,14 +99,14 @@ router.get("/logout", (req, res) => {
   return res.redirect("/login");
 });
 
-
+// ================= FORGOT PASSWORD =================
 
 // 1) Show "Forgot Password" page
 router.get("/forgot-password", (req, res) => {
   res.render("forgot-password", { error: null, success: null });
 });
 
-// 2) Handle email submit and send reset link
+// 2) Handle email submit (EMAIL SENDING DISABLED)
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -114,17 +119,18 @@ router.post("/forgot-password", async (req, res) => {
       });
     }
 
-    // Generate token
     const token = crypto.randomBytes(32).toString("hex");
 
-    // Save and  expiry 1 hour
     user.resetPasswordToken = token;
     user.resetPasswordExpires = Date.now() + 60 * 60 * 1000;
     await user.save();
 
     const resetURL = `${req.protocol}://${req.get("host")}/reset-password/${token}`;
 
-    // Send mail
+    /* =====================================================
+       ❌ EMAIL DISABLED ON RAILWAY (SMTP BLOCKED)
+       ===================================================== */
+    /*
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: user.email,
@@ -136,10 +142,11 @@ router.post("/forgot-password", async (req, res) => {
         <p>This link will expire in 1 hour.</p>
       `
     });
+    */
 
     return res.render("forgot-password", {
       error: null,
-      success: "Reset link has been sent to your email."
+      success: "Password reset feature is temporarily disabled."
     });
   } catch (err) {
     console.error(err);
@@ -150,7 +157,7 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
-// 3) Show Reset Password form when user clicks email link
+// 3) Show Reset Password form
 router.get("/reset-password/:token", async (req, res) => {
   try {
     const token = req.params.token;
