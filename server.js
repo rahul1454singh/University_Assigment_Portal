@@ -83,26 +83,27 @@ const Admin = require("./models/Admin");
     });
 
     /* ===== START SERVER ===== */
-    const port = process.env.PORT || 3000;
+   const port = process.env.PORT || 3000;
 
-    app.listen(port, async () => {
-      const adminExists = await Admin.findOne({
-        email: "admin@university.com"
-      });
+app.listen(port, "0.0.0.0", async () => {
+  const adminExists = await Admin.findOne({
+    email: "admin@university.com"
+  });
 
-      if (!adminExists) {
-        const hashed = await bcrypt.hash("admin", 10);
-        await Admin.create({
-          name: "Admin",
-          email: "admin@university.com",
-          password: hashed,
-          role: "admin"
-        });
-        console.log("Default admin created");
-      }
-
-      console.log(`Server running at http://localhost:${port}`);
+  if (!adminExists) {
+    const hashed = await bcrypt.hash("admin", 10);
+    await Admin.create({
+      name: "Admin",
+      email: "admin@university.com",
+      password: hashed,
+      role: "admin"
     });
+    console.log("Default admin created");
+  }
+
+  console.log(`Server running on port ${port}`);
+});
+
 
   } catch (err) {
     console.error("Startup failed:", err);
