@@ -6,14 +6,9 @@
   <title>Edit User</title>
 
   <style>
-    :root { 
-      --blue:#4b6cb7; 
-      --bg:#f3f5f9; 
-    }
+    :root { --blue:#4b6cb7; --bg:#f3f5f9; }
 
-    * { 
-      box-sizing: border-box; 
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -22,7 +17,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      height: 100vh;
       padding: 16px;
     }
 
@@ -80,7 +75,6 @@
       text-align: center;
       font-weight: 700;
       text-decoration: none;
-      font-size: 15px;
     }
 
     .msg {
@@ -94,52 +88,6 @@
 
     .ok { background: #d4edda; color:#155724; }
     .err { background: #f8d7da; color:#721c24; }
-
-    /* =====================
-       MOBILE (Small screens)
-    ===================== */
-    @media (max-width: 480px) {
-      .box {
-        padding: 18px;
-        border-radius: 10px;
-      }
-
-      h2 {
-        font-size: 20px;
-      }
-
-      input, select {
-        padding: 10px;
-        font-size: 14px;
-      }
-
-      .btn, .back {
-        padding: 11px;
-        font-size: 14px;
-      }
-    }
-
-    /* =====================
-       LARGE SCREENS
-    ===================== */
-    @media (min-width: 1024px) {
-      .box {
-        max-width: 460px;
-        padding: 28px;
-      }
-
-      h2 {
-        font-size: 24px;
-      }
-
-      input, select {
-        font-size: 16px;
-      }
-
-      .btn {
-        font-size: 16px;
-      }
-    }
   </style>
 </head>
 

@@ -10,7 +10,6 @@ body{
   font-family:"Segoe UI",sans-serif;
   background:#f4f6fb;
   padding:20px;
-  min-height:100vh;
 }
 
 .container{
@@ -23,7 +22,6 @@ body{
 
 .meta p{
   margin:6px 0;
-  font-size:14px;
 }
 
 iframe{
@@ -31,7 +29,6 @@ iframe{
   height:420px;
   border:1px solid #ddd;
   margin-top:10px;
-  border-radius:8px;
 }
 
 .download-btn{
@@ -43,7 +40,6 @@ iframe{
   text-decoration:none;
   border-radius:6px;
   font-weight:700;
-  font-size:14px;
 }
 
 textarea{
@@ -52,16 +48,12 @@ textarea{
   margin-top:8px;
   padding:10px;
   resize:vertical;
-  border-radius:6px;
-  border:1px solid #ccc;
-  font-size:14px;
 }
 
 .actions{
   display:flex;
   gap:16px;
   margin-top:20px;
-  flex-wrap:wrap;
 }
 
 .approve{
@@ -72,7 +64,6 @@ textarea{
   border-radius:6px;
   font-weight:700;
   cursor:pointer;
-  font-size:14px;
 }
 
 .reject{
@@ -83,59 +74,6 @@ textarea{
   border-radius:6px;
   font-weight:700;
   cursor:pointer;
-  font-size:14px;
-}
-
-/* =====================
-   TABLET & MOBILE
-===================== */
-@media (max-width: 768px){
-  .container{
-    padding:18px;
-  }
-
-  iframe{
-    height:320px;
-  }
-
-  .actions{
-    gap:12px;
-  }
-}
-
-/* =====================
-   MOBILE
-===================== */
-@media (max-width: 480px){
-  body{
-    padding:12px;
-  }
-
-  .container{
-    padding:14px;
-  }
-
-  iframe{
-    height:240px;
-  }
-
-  textarea{
-    font-size:13px;
-    padding:9px;
-  }
-
-  .approve,
-  .reject{
-    width:100%;
-    padding:12px;
-    font-size:14px;
-  }
-
-  .download-btn{
-    width:100%;
-    text-align:center;
-    padding:12px;
-  }
 }
 </style>
 </head>
@@ -169,6 +107,7 @@ textarea{
     placeholder="Enter remarks for the student (max 300 words)"></textarea>
 
   <div class="actions">
+    <!-- IMPORTANT: type="button" -->
     <button type="button" class="approve"
       onclick="submitDecision('Approved')">
       ✓ Approve Assignment

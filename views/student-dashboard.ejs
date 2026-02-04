@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Student Dashboard</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-
   <style>
     :root {
       --blue: #4b6cb7;
@@ -15,9 +14,8 @@
       --left-column-width: 72px;
       --modal-overlay: rgba(0,0,0,0.45);
     }
-
     * { box-sizing: border-box; margin:0; padding:0; }
-
+    
     body { 
       font-family: "Segoe UI", sans-serif; 
       background: var(--bg); 
@@ -29,8 +27,14 @@
 
     /* --- ANIMATION DEFINITIONS --- */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes slideInRight {
@@ -38,274 +42,373 @@
       to { opacity: 1; transform: translateX(0); }
     }
 
-    /* TOPBAR */
+    /* Topbar */
     .topbar {
       background: var(--blue);
       color: #fff;
       height: var(--topbar-height);
       display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
+      grid-template-columns: auto 1fr auto; 
+      align-items: center;                  
       padding: 0 18px;
       position: fixed;
-      inset: 0 0 auto 0;
+      top: 0; left: 0; right: 0;
       z-index: 1000;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     .menu-btn {
-      width:44px;height:44px;
+      position: relative;
+      width:44px;
+      height:44px;
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
       border-radius:8px;
-      background:transparent;
-      border:none;
+      transition: background .15s;
+      z-index:1200;
+      background: transparent;
+      border: none;
+      padding:0;
+      margin: 0;        
+      align-self: center;
+      justify-self: start; 
     }
     .menu-btn:hover { background: rgba(255,255,255,0.1); }
-
-    .menu-btn .bars {
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-
-    .menu-btn .bars span {
-      width:20px;
-      height:2.6px;
-      background:white;
-      border-radius:2px;
-      transition:.18s;
-    }
-
+    .menu-btn .bars { display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center; pointer-events: none; }
+    .menu-btn .bars span { display:block; width:20px; height:2.6px; background:white; border-radius:2px; transition: transform .18s, opacity .12s; }
     .menu-btn.open .bars span:nth-child(1) { transform: translateY(8.5px) rotate(45deg); }
-    .menu-btn.open .bars span:nth-child(2) { opacity:0; }
+    .menu-btn.open .bars span:nth-child(2) { opacity: 0; }
     .menu-btn.open .bars span:nth-child(3) { transform: translateY(-8.5px) rotate(-45deg); }
 
     .topbar .title {
       font-weight:800;
       font-size:20px;
+      letter-spacing:0.2px;
       text-align:center;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      color: #fff;
+      justify-self: center; 
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 12px; 
     }
 
     .topbar .right {
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:14px;
+      justify-self: end; 
     }
 
-    .hello { font-size:15px; }
+    .hello { font-size:15px; color:#fff; white-space:nowrap; }
     .hello .name { color:#dcecff; font-weight:700; margin-left:6px; }
 
-    /* CONTENT */
-    .content {
-      flex: 1 0 auto;
+    /* Content Area */
+    .content { 
+      flex: 1 0 auto; 
       margin-top: calc(var(--topbar-height) + 20px);
-      padding: 18px;
-      max-width: 1200px;
+      padding: 18px; 
+      max-width: 1200px; 
       width: 95%;
-      margin-left:auto;
-      margin-right:auto;
-      transition: filter .25s ease, opacity .25s ease;
+      margin-left: auto;
+      margin-right: auto;
+      transition: filter .25s ease, opacity .25s ease; 
+    }
+    
+    body.sidebar-open .content { filter: blur(3px); opacity: 0.35; pointer-events: none; }
+    body.sidebar-open::before { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.18); z-index: 1100; }
+
+    .wrap { 
+      background:white; 
+      border-radius:10px; 
+      padding:18px; 
+      box-shadow:0 8px 18px rgba(0,0,0,0.04); 
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    h1 { margin:0 0 18px; font-size:22px; text-align: center; }
+
+    /* Card Animations */
+    .cards { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+    .card { 
+      padding:18px; 
+      border-radius:10px; 
+      min-width:160px; 
+      flex:1 1 180px; 
+      box-shadow:0 3px 10px rgba(0,0,0,0.05); 
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out forwards;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+    .card:nth-child(4) { animation-delay: 0.4s; }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.1);
     }
 
-    body.sidebar-open .content {
-      filter: blur(3px);
-      opacity:.35;
-      pointer-events:none;
+    .card h3 { margin:0 0 8px; font-size:13px; color:#666; }
+    .card p { margin:0; font-size:22px; font-weight:800; color:#111; }
+    .card.draft { background: #eef1ff; }
+    .card.submitted { background: #e9fdf4; }
+    .card.approved { background: #fdfde7; }
+    .card.rejected { background: #ffecec; }
+
+    /* Actions & Buttons */
+    .actions { display:flex; justify-content:flex-end; gap:10px; margin-bottom:12px; }
+    .btn { 
+      padding:8px 12px; 
+      background:var(--blue); 
+      color:#fff; 
+      border-radius:8px; 
+      text-decoration:none; 
+      font-weight:700; 
+      display:inline-flex; 
+      align-items:center; 
+      gap:8px; 
+      border: none; 
+      cursor: pointer; 
+      transition: background 0.3s ease, transform 0.2s ease;
     }
+    .btn:hover { background: #3a5591; transform: scale(1.03); }
+    .btn:active { transform: scale(0.98); }
 
-    body.sidebar-open::before {
-      content:"";
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.18);
-      z-index:1100;
-    }
+    /* Table */
+    .recent { background: var(--card); padding:12px; border-radius:8px; box-shadow:0 3px 10px rgba(0,0,0,0.05); overflow-x:auto; }
+    .recent table { width:100%; border-collapse:collapse; table-layout: fixed; min-width:520px; }
+    .recent thead th { text-align:left; font-size:14px; padding:12px; color:#333; font-weight:700; }
+    .recent tbody td { padding:12px; border-bottom:1px solid #eee; font-size:14px; vertical-align:middle; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .recent tbody tr { transition: background-color 0.2s ease; }
+    .recent tbody tr:hover { background-color: #f8faff; }
+    
+    .status-approved { color:#2f9e44; font-weight:700; background:#e9f7ee; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
+    .status-rejected { color:#c92a2a; font-weight:700; background:#fdecea; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
+    .status-submitted { color:#2f9e44; font-weight:700; background:#fff7e6; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
+    .status-draft { color:#5065d6; background:#eef2ff; padding:6px 10px; border-radius:16px; display:inline-block; font-size:13px; }
 
-    .wrap {
-      background:white;
-      border-radius:10px;
-      padding:18px;
-      box-shadow:0 8px 18px rgba(0,0,0,0.04);
-      animation: fadeInUp .6s ease forwards;
-    }
-
-    h1 { margin-bottom:18px; font-size:22px; text-align:center; }
-
-    /* CARDS */
-    .cards {
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:18px;
-    }
-
-    .card {
-      padding:18px;
-      border-radius:10px;
-      min-width:160px;
-      flex:1 1 180px;
-      box-shadow:0 3px 10px rgba(0,0,0,0.05);
-      opacity:0;
-      animation: fadeInUp .5s ease forwards;
-    }
-
-    .card:nth-child(1){animation-delay:.1s}
-    .card:nth-child(2){animation-delay:.2s}
-    .card:nth-child(3){animation-delay:.3s}
-    .card:nth-child(4){animation-delay:.4s}
-
-    .card:hover { transform: translateY(-5px); }
-
-    .card h3 { font-size:13px; color:#666; margin-bottom:6px; }
-    .card p { font-size:22px; font-weight:800; }
-
-    .card.draft { background:#eef1ff; }
-    .card.submitted { background:#e9fdf4; }
-    .card.approved { background:#fdfde7; }
-    .card.rejected { background:#ffecec; }
-
-    /* ACTIONS */
-    .actions {
-      display:flex;
-      justify-content:flex-end;
-      margin-bottom:12px;
-    }
-
-    .btn {
-      padding:8px 12px;
-      background:var(--blue);
-      color:white;
-      border-radius:8px;
-      font-weight:700;
-      text-decoration:none;
-      transition:.2s;
-    }
-
-    .btn:hover { background:#3a5591; transform:scale(1.03); }
-
-    /* TABLE */
-    .recent {
-      background:white;
-      padding:12px;
-      border-radius:8px;
-      box-shadow:0 3px 10px rgba(0,0,0,0.05);
-      overflow-x:auto;
-    }
-
-    .recent table {
-      width:100%;
-      min-width:520px;
-      border-collapse:collapse;
-    }
-
-    .recent th,
-    .recent td {
-      padding:12px;
-      border-bottom:1px solid #eee;
-      font-size:14px;
-      white-space:nowrap;
-    }
-
-    .status-approved { background:#e9f7ee;color:#2f9e44;padding:6px 10px;border-radius:16px;font-weight:700;font-size:13px }
-    .status-rejected { background:#fdecea;color:#c92a2a;padding:6px 10px;border-radius:16px;font-weight:700;font-size:13px }
-    .status-submitted { background:#fff7e6;color:#2f9e44;padding:6px 10px;border-radius:16px;font-weight:700;font-size:13px }
-    .status-draft { background:#eef2ff;color:#5065d6;padding:6px 10px;border-radius:16px;font-weight:700;font-size:13px }
-
-    /* FOOTER */
+    /* Footer */
     footer {
-      text-align:center;
-      padding:40px 0 30px;
+      flex-shrink: 0; 
+      text-align: center;
+      padding: 40px 0 30px 0; 
+      width: 100%;
+      background: transparent;
     }
+    .footer-brand { font-weight: 800; font-size: 14px; color: #222; margin-bottom: 4px; }
+    .footer-copyright { font-size: 13px; color: #666; }
 
-    .footer-brand { font-weight:800;font-size:14px; }
-    .footer-copyright { font-size:13px;color:#666; }
-
-    /* NAV PANEL */
-    .nav-panel {
-      position:fixed;
-      top: calc(var(--topbar-height) + 16px);
-      left:20px;
-      width:240px;
-      background:white;
-      border-radius:12px;
-      padding:12px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.12);
-      transform:translateX(-30px);
-      opacity:0;
-      pointer-events:none;
-      transition:.3s;
-      z-index:1250;
+    /* Navigation Panel */
+    .nav-panel { 
+      position: fixed; 
+      top: calc(var(--topbar-height) + 16px); 
+      left: 20px; 
+      width:240px; 
+      background:#fff; 
+      border-radius:12px; 
+      padding:12px; 
+      box-shadow:0 10px 30px rgba(0,0,0,0.12); 
+      transform: translateX(-30px); 
+      opacity: 0; 
+      transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1), opacity .25s ease; 
+      z-index:1250; 
+      pointer-events: none; 
     }
-
-    .nav-panel.open {
-      transform:translateX(0);
-      opacity:1;
-      pointer-events:auto;
+    .nav-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    
+    .nav-item { 
+      background:#f5f6f8; 
+      padding:10px 12px; 
+      border-radius:8px; 
+      margin-bottom:10px; 
+      font-weight:700; 
+      cursor:pointer; 
+      transition: all 0.2s ease;
     }
+    .nav-item:hover:not(.active) { padding-left: 18px; background: #ebedf2; color: var(--blue); }
+    .nav-item.active { background: var(--blue); color: #fff; }
 
-    .nav-item {
-      background:#f5f6f8;
-      padding:10px 12px;
-      border-radius:8px;
-      margin-bottom:10px;
-      font-weight:700;
-      cursor:pointer;
-    }
+    /* MODIFIED USER SECTION */
+    .nav-user-panel { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; margin-bottom:12px; border-radius:8px; background: linear-gradient(180deg,#f6f8ff,#ffffff); border: 1px solid rgba(75,108,183,0.06); }
+    .nav-user-info .name { font-weight: 800; font-size: 15px; color: #111; } /* Added bold weight and slightly larger font */
+    .nav-user-info .role { font-size: 12px; color: #777; }
+    .nav-logout-btn { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:800; color:white; background: linear-gradient(180deg,#e25a57, #d23c37); transition: transform 0.2s; }
+    .nav-logout-btn:hover { transform: scale(1.05); }
 
-    .nav-item.active { background:var(--blue); color:white; }
-
-    /* MODAL */
-    .modal-overlay-global {
-      display:none;
-      position:fixed;
-      inset:0;
-      background:var(--modal-overlay);
-      z-index:2200;
-      align-items:center;
+    /* --- COMPACT LOGOUT MODAL --- */
+    .modal-overlay-global { 
+      display:none; 
+      position: fixed; 
+      inset: 0; 
+      background: var(--modal-overlay); 
+      z-index:2200; 
+      align-items:center; 
       justify-content:center;
+      backdrop-filter: blur(3px);
     }
-
     .modal-overlay-global.open { display:flex; }
-
-    .modal-box {
-      width:340px;
-      background:white;
-      border-radius:20px;
-      padding:30px 15px;
+    .modal-box { 
+      width: 340px; 
+      background: #fff; 
+      border-radius: 20px; 
+      padding: 30px 15px; 
       text-align:center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      transform: scale(0.9);
+      transition: transform 0.2s ease;
     }
+    .modal-overlay-global.open .modal-box { transform: scale(1); }
 
-    /* =====================
-       RESPONSIVE
-    ===================== */
-    @media(max-width:900px){
-      .content{width:92%;padding:12px}
-      .topbar .title{font-size:16px}
-      .hello{display:none}
+    .modal-box h2 { 
+      font-size: 21px; 
+      font-weight: 800; 
+      color: #000; 
+      margin-bottom: 5px;
+      line-height: 1.2;
     }
-
-    @media(max-width:600px){
-      .cards{gap:10px}
-      .card p{font-size:20px}
-      .btn{width:100%;justify-content:center}
-      .actions{justify-content:center}
+    .modal-box p {
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 22px;
     }
+    .modal-btn-container {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .modal-btn {
+      padding: 9px 28px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+    }
+    .modal-btn.no { background: #f0f0f0; color: #000; }
+    .modal-btn.yes { background: #e56b6b; color: #fff; }
 
-    @media(max-width:480px){
-      .content{width:100%;padding:10px}
-      h1{font-size:20px}
-      .recent table{font-size:13px}
+    @media (max-width: 900px) {
+      .content { width: 92%; padding:12px; }
+      .topbar .title { font-size:16px; }
     }
   </style>
 </head>
+<body data-user="<%= user && user.name ? user.name : (user && user.email ? user.email : '') %>">
 
-<body>
-  <!-- YOUR ORIGINAL HTML + JS BELOW IS 100% UNCHANGED -->
+  <header class="topbar">
+    <button id="menuButton" class="menu-btn" title="Menu">
+      <div class="bars"><span></span><span></span><span></span></div>
+    </button>
+    <div class="title">Student Dashboard</div>
+    <div class="right">
+      <div class="hello">Hello, <span class="name"><%= user && user.name ? user.name : 'Student' %></span></div>
+    </div>
+  </header>
+
+  <div id="navPanel" class="nav-panel">
+    <div class="nav-user-panel">
+      <div class="nav-user-info">
+        <div id="navUserName" class="name"><%= user && user.name ? user.name : 'Student' %></div>
+        <div class="role">Student</div>
+      </div>
+      <button id="navLogoutBtn" class="nav-logout-btn">Logout</button>
+    </div>
+    <div id="navDashboard" class="nav-item active">Dashboard</div>
+    <div id="navAllAssignments" class="nav-item">View All Assignments</div>
+    <div id="navProfile" class="nav-item">Profile</div>
+  </div>
+
+  <div class="content" id="mainContent">
+    <div class="wrap">
+      <h1>Assignment Dashboard</h1>
+      <div class="cards">
+        <div class="card draft"><h3>Draft</h3><p><%= counts.Draft %></p></div>
+        <div class="card submitted"><h3>Submitted</h3><p><%= counts.Submitted %></p></div>
+        <div class="card approved"><h3>Approved</h3><p><%= counts.Approved %></p></div>
+        <div class="card rejected"><h3>Rejected</h3><p><%= counts.Rejected %></p></div>
+      </div>
+      <div class="actions">
+        <a href="/student/assignments/upload" class="btn">Upload New Assignment</a>
+      </div>
+      <h2 style="margin:12px 0">Recent Submissions</h2>
+      <div class="recent">
+        <table>
+          <thead>
+            <tr><th>Title</th><th>Status</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            <% for (let i = 0; i < Math.min(recent.length || 0, 5); i++) {
+                 const r = recent[i]; %>
+              <tr>
+                <td><%= r.title %></td>
+                <td><span class="status-<%= r.status.toLowerCase() %>"><%= r.status %></span></td>
+                <td><%= new Date(r.createdAt).toLocaleString() %></td>
+              </tr>
+            <% } %>
+            <% if (!recent || recent.length === 0) { %>
+              <tr><td colspan="3">No recent submissions</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-brand">University Management</div>
+    <div class="footer-copyright">© 2026 Your University Dashboard</div>
+  </footer>
+
+  <div id="logoutModalOverlay" class="modal-overlay-global">
+    <div class="modal-box">
+      <h2>Are you sure you want to logout?</h2>
+      <p>This will end your session.</p>
+      <div class="modal-btn-container">
+        <button id="cancelLogout" class="modal-btn no">No</button>
+        <button id="confirmLogout" class="modal-btn yes">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const menuButton = document.getElementById('menuButton');
+      const navPanel = document.getElementById('navPanel');
+
+      function openNav() {
+        navPanel.classList.add('open');
+        menuButton.classList.add('open');
+        document.body.classList.add('sidebar-open');
+      }
+      function closeNav() {
+        navPanel.classList.remove('open');
+        menuButton.classList.remove('open');
+        document.body.classList.remove('sidebar-open');
+      }
+
+      menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (navPanel.classList.contains('open')) closeNav(); else openNav();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!navPanel.contains(e.target) && !menuButton.contains(e.target)) closeNav();
+      });
+
+      document.getElementById('navDashboard').addEventListener('click', () => { closeNav(); window.scrollTo({top: 0, behavior: 'smooth'}); });
+      document.getElementById('navProfile').addEventListener('click', () => { window.location.href = '/student/profile'; });
+      document.getElementById('navAllAssignments').addEventListener('click', () => { window.location.href = '/student/assignments'; });
+
+      const navLogoutBtn = document.getElementById('navLogoutBtn');
+      const logoutOverlay = document.getElementById('logoutModalOverlay');
+      navLogoutBtn.addEventListener('click', () => logoutOverlay.classList.add('open'));
+      document.getElementById('cancelLogout').addEventListener('click', () => logoutOverlay.classList.remove('open'));
+      document.getElementById('confirmLogout').addEventListener('click', () => window.location.href = '/logout');
+    })();
+  </script>
 </body>
 </html>

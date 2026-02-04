@@ -5,7 +5,7 @@
   <title>Admin Dashboard</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    /* ================= YOUR ORIGINAL CSS (UNCHANGED) ================= */
+    /* Reset / base */
     * { box-sizing: border-box; margin:0; padding:0; }
     html,body { height:100%; }
     body {
@@ -18,8 +18,11 @@
       transition: background 0.25s;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
+      /* Prevent overall body horizontal scroll */
+      overflow-x: hidden; 
     }
 
+    /* --- ANIMATIONS --- */
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -31,8 +34,11 @@
       100% { transform: scale(1); opacity: 0.5; }
     }
 
-    .animate-in { animation: fadeInUp 0.6s ease forwards; }
+    .animate-in {
+      animation: fadeInUp 0.6s ease forwards;
+    }
 
+    /* Top navbar */
     .navbar {
       background: #4b6cb7;
       height: 64px;
@@ -52,19 +58,25 @@
       justify-content:center;
       cursor:pointer;
       border-radius:8px;
+      transition: background .15s;
+      flex: 0 0 auto;
     }
+    .menu-toggle:hover { background: rgba(255,255,255,0.06); }
 
     .menu-toggle .bars {
       display:flex;
       flex-direction:column;
       gap:6px;
+      align-items:center;
+      justify-content:center;
     }
-
     .menu-toggle .bars span {
+      display:block;
       width:20px;
       height:2.6px;
       background:white;
       border-radius:2px;
+      transition: transform .18s, opacity .12s;
     }
 
     .navbar .title {
@@ -74,55 +86,138 @@
       font-weight: 800;
       color: white;
       font-size: 20px;
-      max-width: 60%;
       text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60%;
     }
 
     .navbar .right {
       margin-left: auto;
+      display:flex;
+      gap:12px;
+      align-items:center;
       color:white;
       font-weight:600;
+      z-index: 70;
     }
 
     .page-wrap {
       display:flex;
       gap:20px;
+      align-items:flex-start;
       padding: 20px;
-      flex: 1;
+      transition: padding-left .25s;
+      position: relative;
+      flex: 1 1 auto;
     }
 
+    /* Sidebar */
     .sidebar {
       width: 240px;
+      min-width: 240px;
       background: white;
       border-radius: 10px;
       padding: 12px;
       box-shadow: 0 8px 24px rgba(15,35,60,0.06);
+      transform: translateX(-18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .28s ease, opacity .25s ease, width .2s ease, padding .2s ease;
+      z-index: 55;
+      position: relative;
     }
-
     .sidebar a {
       display:block;
-      padding:12px;
+      padding:12px 14px;
       margin-bottom:10px;
       border-radius:8px;
+      text-decoration:none;
+      color:#333;
       background:#f5f6f8;
       text-align:center;
       font-weight:700;
-      text-decoration:none;
-      color:#333;
+      transition: background .15s, color .15s, transform 0.2s;
     }
+    .sidebar a:hover { background:#eef3ff; transform: translateX(5px); }
 
+    .sidebar .user-panel {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      margin-bottom:12px;
+      border-radius:8px;
+      background: linear-gradient(180deg,#f6f8ff,#ffffff);
+      border: 1px solid rgba(75,108,183,0.06);
+    }
+    .user-info { display:flex; flex-direction:column; min-width:0; }
+    .user-info .name { font-weight:800; color:#18304a; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .user-info .role { font-size:12px; color:#6b6b6b; font-weight:700; margin-top:2px; }
+
+    .sidebar .logout-btn {
+      padding:8px 12px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      color:white;
+      background: linear-gradient(180deg,#e25a57, #d23c37);
+      box-shadow: 0 8px 18px rgba(194,48,48,0.14);
+    }
     .sidebar a.active {
       background: #4b6cb7;
       color: white;
+      box-shadow: 0 6px 14px rgba(75,108,183,0.12);
     }
 
-    .main { flex:1; }
+    /* Main content area */
+    .main {
+      flex:1;
+      transition: margin-left .25s ease, width .25s ease, filter .25s ease, opacity .25s ease;
+      min-height: calc(100vh - 64px - 120px);
+      min-width: 0; /* Important: prevents flex items from overflowing parent */
+    }
 
     .container {
-      background: #fff;
+      background: rgba(255,255,255,0.96);
       border-radius: 12px;
       padding: 28px;
       box-shadow: 0 8px 28px rgba(13,40,90,0.06);
+      transition: all 0.3s ease;
+      max-width: 100%;
+      overflow: hidden; /* Contains children */
+    }
+
+    .container h1 {
+      text-align:center;
+      font-size:34px;
+      margin-bottom: 20px;
+      color:#222;
+      font-weight:800;
+    }
+
+    /* NEW: TABLE RESPONSIVE WRAPPER */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 15px;
+      border-radius: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px; /* Ensures table doesn't squish too much */
+    }
+    
+    table th, table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
     }
 
     .overview {
@@ -133,112 +228,274 @@
     }
 
     .card {
-      padding:20px;
+      padding:20px 18px;
       border-radius:12px;
       text-align:center;
+      color:#001f3f;
+      box-shadow: 0 6px 18px rgba(13,40,90,0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+    .card:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 12px 24px rgba(13,40,90,0.1);
+    }
+    .card h3 { margin:0; color:#6b6b6b; font-size:14px; font-weight:700; }
+    .card p { font-size:28px; font-weight:800; margin-top:8px; color:#001f3f; }
+
+    .card.departments { background:#e8f2ff; }
+    .card.students     { background:#e9fdf0; }
+    .card.professors  { background:#fff3e7; }
+    .card.hods        { background:#f6ecff; }
 
     .content-box {
       background: #ffffff;
+      border: 1px solid #f0f0f0;
       border-radius: 12px;
       padding: 24px;
       margin-top: 20px;
     }
 
+    .content-box h2 {
+      font-size: 18px;
+      margin-bottom: 18px;
+      color: #4b6cb7;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .content-box h2::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #eee;
+    }
+
+    .activity-list { list-style: none; }
     .activity-item {
-      display:flex;
-      justify-content: space-between;
-      padding: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f8f9fa;
       font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+      border-radius: 8px;
     }
-
-    .app-footer {
-      padding: 16px;
-      text-align: center;
-      font-size: 13px;
+    .activity-item:hover { background: #f9fbff; }
+    .activity-item .dot {
+      width: 8px;
+      height: 8px;
+      background: #4b6cb7;
+      border-radius: 50%;
+      margin-right: 12px;
+      display: inline-block;
+      animation: pulse-soft 2s infinite;
     }
+    .activity-item span { color: #888; font-size: 12px; font-weight: 600; }
 
-    /* ================= RESPONSIVE CSS (ONLY ADDITION) ================= */
+    /* Sidebar toggles */
+    body.sidebar-open .sidebar { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    body.sidebar-open .main { filter: blur(3px); opacity: 0.35; pointer-events: none; }
+    body.sidebar-open::before { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.18); z-index: 45; }
+    body:not(.sidebar-open) .sidebar { transform: translateX(-28px); opacity: 0; pointer-events: none; width: 0; min-width: 0; padding: 0; }
+    body:not(.sidebar-open) .main .container { max-width: 1200px; margin: 0 auto; }
+    body.sidebar-open .main .container { max-width: 940px; margin-left: 12px; }
 
-    @media (max-width: 1024px) {
-      .navbar .title {
-        font-size: 18px;
-        max-width: 70%;
-      }
+    .menu-toggle.open .bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .menu-toggle.open .bars span:nth-child(2) { opacity: 0; }
+    .menu-toggle.open .bars span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-      .container {
-        padding: 22px;
-      }
+    .modal-overlay { 
+      position: fixed; 
+      inset: 0; 
+      background: rgba(0,0,0,0.45); 
+      display: none; 
+      justify-content: center; 
+      align-items: center; 
+      z-index: 2000; 
+      backdrop-filter: blur(3px);
     }
+    .modal-box { 
+      width: 340px; 
+      background: #fff; 
+      border-radius: 20px; 
+      padding: 30px 15px; 
+      text-align:center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      transform: scale(0.9);
+      transition: transform 0.2s ease;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-overlay.open .modal-box { transform: scale(1); }
 
+    .modal-box h2 { 
+      font-size: 21px; 
+      font-weight: 800; 
+      color: #000; 
+      margin-bottom: 5px;
+      line-height: 1.2;
+    }
+    .modal-box p {
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 22px;
+    }
+    .modal-btn-container {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .modal-btn {
+      padding: 9px 28px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .modal-btn:hover { opacity: 0.8; }
+    .modal-btn.no { background: #f0f0f0; color: #000; }
+    .modal-btn.yes { background: #e56b6b; color: #fff; }
+
+    .app-footer { padding: 16px; text-align: center; color: #5b6b6b; font-size: 13px; }
+
+    /* MOBILE ADJUSTMENTS */
     @media (max-width: 768px) {
-      .page-wrap {
-        padding: 12px;
-      }
-
-      .container h1 {
-        font-size: 26px;
-      }
-
-      .overview {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 16px;
-      }
-
-      .activity-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .navbar {
-        padding: 0 10px;
-      }
-
-      .navbar .title {
-        font-size: 15px;
-        max-width: 75%;
-      }
-
-      .navbar .right {
-        font-size: 13px;
-      }
-
-      .page-wrap {
-        padding: 10px;
-      }
-
-      .container {
-        padding: 18px;
-      }
-
-      .container h1 {
-        font-size: 22px;
-      }
-
-      .overview {
-        grid-template-columns: 1fr;
-      }
-
-      .card p {
-        font-size: 22px;
-      }
-
-      .activity-item {
-        font-size: 13px;
-      }
-
-      body.sidebar-open .main {
-        filter: blur(2px);
-      }
+      .navbar .right { display: none; }
+      .navbar .title { max-width: 90%; font-size: 16px; }
+      .container { padding: 16px; }
+      .container h1 { font-size: 26px; }
     }
   </style>
 </head>
 
 <body data-admin="<%= adminName %>">
-  <!-- ===== BODY CONTENT UNCHANGED ===== -->
-  <!-- Your original HTML & JS remains exactly the same -->
+  <div class="navbar">
+    <div id="menuBtn" class="menu-toggle" aria-label="Toggle menu">
+      <div class="bars"><span></span><span></span><span></span></div>
+    </div>
+    <div class="title">University Admin Dashboard</div>
+    <div class="right">
+      <div id="greeting">Hello, <%= adminName %></div>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <nav class="sidebar" id="sidebar">
+      <div class="user-panel">
+        <div class="user-info">
+          <div id="sidebarUserName" class="name"><%= adminName %></div>
+          <div id="sidebarUserRole" class="role">Admin</div>
+        </div>
+        <button id="sidebarLogoutBtn" class="logout-btn">Logout</button>
+      </div>
+      <a href="/admin/dashboard" class="active">Dashboard Overview</a>
+      <a href="/admin/departments">Departments</a>
+      <a href="/admin/users">Users</a>
+    </nav>
+
+    <main class="main" id="mainContent">
+      <div class="container animate-in">
+        <h1>Dashboard Overview</h1>
+
+        <div class="overview">
+          <div class="card departments">
+            <h3>Total Departments</h3>
+            <p><%= totalDepartments %></p>
+          </div>
+          <div class="card students">
+            <h3>Total Students</h3>
+            <p><%= totalStudents %></p>
+          </div>
+          <div class="card professors">
+            <h3>Total Professors</h3>
+            <p><%= totalProfessors %></p>
+          </div>
+          <div class="card hods">
+            <h3>Total HODs</h3>
+            <p><%= totalHODs %></p>
+          </div>
+        </div>
+
+        <div class="content-box">
+          <h2>Recent University Activity</h2>
+          
+          <div class="table-responsive">
+            <div class="activity-list">
+              <div class="activity-item">
+                <div><span class="dot"></span>New Department "Computer Science" added by Admin.</div>
+                <span>2 hrs ago</span>
+              </div>
+              <div class="activity-item">
+                <div><span class="dot"></span>Professor Smith updated the "Physics" curriculum.</div>
+                <span>5 hrs ago</span>
+              </div>
+              <div class="activity-item">
+                <div><span class="dot"></span>Semester registration period has been opened.</div>
+                <span>Yesterday</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="app-footer">
+    <div style="font-weight:800; color:#222;">University Management</div>
+    <div>© <%= new Date().getFullYear() %> Your University</div>
+  </footer>
+
+  <div id="logoutModal" class="modal-overlay">
+    <div class="modal-box">
+      <h2>Are you sure you want to logout?</h2>
+      <p>This will end your session.</p>
+      <div class="modal-btn-container">
+        <button id="cancelLogout" class="modal-btn no">No</button>
+        <button id="confirmLogout" class="modal-btn yes">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const menuBtn = document.getElementById('menuBtn');
+      const sidebar = document.getElementById('sidebar');
+      function setOpen(open) {
+        document.body.classList.toggle('sidebar-open', open);
+        menuBtn.classList.toggle('open', open);
+      }
+      setOpen(false);
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setOpen(!document.body.classList.contains('sidebar-open'));
+      });
+      document.addEventListener('click', (e) => {
+        if (!document.body.classList.contains('sidebar-open')) return;
+        if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) setOpen(false);
+      });
+    })();
+
+    (function() {
+      const rawAdmin = document.body.getAttribute('data-admin') || 'Admin';
+      const greeting = document.getElementById('greeting');
+      const sidebarName = document.getElementById('sidebarUserName');
+      if(greeting) greeting.textContent = `Hello, ${rawAdmin}`;
+      if(sidebarName) sidebarName.textContent = rawAdmin;
+    })();
+
+    (function() {
+      const btn = document.getElementById('sidebarLogoutBtn');
+      const modal = document.getElementById('logoutModal');
+      const cancel = document.getElementById('cancelLogout');
+      const confirm = document.getElementById('confirmLogout');
+      
+      if(btn) btn.onclick = () => modal.classList.add('open');
+      if(cancel) cancel.onclick = () => modal.classList.remove('open');
+      if(confirm) confirm.onclick = () => window.location.href = '/logout';
+    })();
+  </script>
 </body>
 </html>

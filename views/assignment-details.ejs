@@ -90,7 +90,6 @@
       padding: 12px;
       border-radius: 8px;
       white-space: pre-wrap;
-      word-break: break-word;
     }
 
     select {
@@ -138,65 +137,9 @@
       display: none;
     }
 
-    /* =================== RESPONSIVE CSS (ONLY ADDITION) =================== */
-
-    @media (max-width: 768px) {
-      body {
-        padding: 16px;
-      }
-
-      .wrap {
-        padding: 18px;
-      }
-
-      h1 {
-        font-size: 22px;
-      }
-
-      .row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-
-      select {
-        width: 100%;
-        min-width: unset;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 12px;
-      }
-
-      .wrap {
-        padding: 14px;
-      }
-
-      h1 {
-        font-size: 20px;
-      }
-
-      .meta {
-        font-size: 13px;
-      }
-
-      .status {
-        font-size: 12px;
-        padding: 5px 8px;
-      }
-
+    @media (max-width: 600px) {
       .action-row {
         flex-direction: column;
-      }
-
-      a.btn, button.btn {
-        width: 100%;
-      }
-
-      pre.description {
-        font-size: 13px;
       }
     }
   </style>
@@ -230,10 +173,14 @@
       <% } %>
     </div>
 
+    <!-- ✅ REVIEWER LOGIC FIXED -->
     <div>
       <div class="label">Reviewer</div>
+
       <% if (assignment.status === 'Approved' || assignment.status === 'Rejected') { %>
-        <div><strong><%= assignment.reviewerName || "Professor" %></strong></div>
+        <div>
+          <strong><%= assignment.reviewerName || "Professor" %></strong>
+        </div>
       <% } else { %>
         <div>-</div>
       <% } %>
@@ -245,6 +192,7 @@
     <pre class="description"><%= assignment.description || "-" %></pre>
   </div>
 
+  <!-- ================= SUBMIT FOR REVIEW ================= -->
   <% if (assignment.status === 'Draft' || assignment.status === 'Rejected') { %>
     <div class="submit-box">
       <div class="label">Select Professor</div>
@@ -257,11 +205,19 @@
       </select>
 
       <div class="action-row">
-        <button class="btn btn-submit" id="submitBtn">Submit for Review</button>
-        <a href="/student/assignments" class="btn btn-back">Back to Assignments</a>
+        <button class="btn btn-submit" id="submitBtn">
+          Submit for Review
+        </button>
+
+        <a href="/student/assignments" class="btn btn-back">
+          Back to Assignments
+        </a>
       </div>
 
-      <div class="success-msg" id="successMsg">✅ Assignment submitted successfully.</div>
+      <div class="success-msg" id="successMsg">
+        ✅ Assignment submitted successfully.
+      </div>
+
       <div class="error-msg" id="errorMsg"></div>
     </div>
   <% } else { %>
