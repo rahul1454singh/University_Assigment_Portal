@@ -9,6 +9,11 @@ const UserData = require("../models/UserData");
 
 const router = express.Router();
 
+/* =====================================================
+   ❌ SMTP DISABLED FOR RAILWAY
+   Gmail SMTP is blocked and causes infinite loading
+   ===================================================== */
+/*
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: Number(process.env.SMTP_PORT || 587),
@@ -22,92 +27,49 @@ const transporter = nodemailer.createTransport({
 transporter.verify()
   .then(() => console.log("SMTP ready"))
   .catch(err => console.warn("SMTP verify failed:", err));
+*/
 
-
+/* =====================================================
+   ❌ EMAIL FUNCTION DISABLED
+   ===================================================== */
+/*
 async function sendUserEmail({ to, name = "", password = "", created = true }) {
   const base = (process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
   const loginUrl = `${base}/login`;
 
- 
   const subject = created
     ? "Your University Portal account has been created"
-    : (password && password.trim()
-        ? "Your University Portal password has been changed"
-        : "Your University Portal account was updated");
+    : "Your University Portal account was updated";
 
-  
-  const intro = created
-    ? `<p>Hello ${name}</p>
-       <p>Your University Portal account has been <strong>created</strong>. Please sign in and upload your assignments.</p>`
-    : `<p>Hello ${name}</p>
-       <p>Your account was updated.${password && password.trim() ? " Your password was changed." : ""}</p>`;
-
-
-  const passwordDisplay = password && password.trim() ? password : "(unchanged)";
-
- 
   const html = `
-    <div style="font-family: Arial, Helvetica, sans-serif; padding:16px; color:#222;">
-      ${intro}
-      <table cellspacing="6" cellpadding="0" style="margin-top:8px;">
-        <tr>
-          <td style="font-weight:600">Email:</td>
-          <td style="padding-left:8px">${to}</td>
-        </tr>
-        <tr>
-          <td style="font-weight:600">Password:</td>
-          <td style="padding-left:8px; font-family: 'Courier New', monospace;">${passwordDisplay}</td>
-        </tr>
-      </table>
-
-      <div style="margin:18px 0;">
-        <a href="${loginUrl}" style="
-          display:inline-block;
-          padding:10px 16px;
-          border-radius:6px;
-          text-decoration:none;
-          font-weight:600;
-          background-color:#2b6cb0;
-          color:#fff;
-        ">
-          Login
-        </a>
-      </div>
-
-      ${created ? `<p style="margin-top:8px;color:#444">After login you can upload assignments from the dashboard.</p>` : ""}
-      <hr style="border:none;border-top:1px solid #eee;margin-top:18px"/>
-      <small style="color:#777">If you didn't expect this email, contact your administrator.</small>
-    </div>
+    <p>Hello ${name}</p>
+    <p>Email: ${to}</p>
+    <p>Password: ${password || "(unchanged)"}</p>
+    <p><a href="${loginUrl}">Login</a></p>
   `;
 
-  try {
-    await transporter.sendMail({
-      from: process.env.FROM_EMAIL || process.env.SMTP_USER,
-      to,
-      subject,
-      html
-    });
-  } catch (err) {
-    console.error("Email send error:", err);
-  }
+  await transporter.sendMail({
+    from: process.env.SMTP_USER,
+    to,
+    subject,
+    html
+  });
 }
+*/
 
 const getDepartments = () => Department.find().sort({ name: 1 });
 
-// Render create page
 async function renderCreate(res, locals = {}) {
   const departments = await getDepartments();
   return res.render("create-user", { departments, ...locals });
 }
 
-// Render edit page
 async function renderEdit(res, id, locals = {}) {
   const user = await UserData.findById(id).lean();
   const departments = await getDepartments();
   return res.render("edit-user", { user, departments, ...locals });
 }
 
-// Show create user form
 router.get("/admin/users/create", verifyAdmin, async (req, res) => {
   try {
     await renderCreate(res, { error: null, success: null });
@@ -117,7 +79,6 @@ router.get("/admin/users/create", verifyAdmin, async (req, res) => {
   }
 });
 
-// Create user
 router.post("/admin/users/create", verifyAdmin, async (req, res) => {
   try {
     const { name, email, phone, department, role, password } = req.body;
@@ -130,26 +91,49 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
       return await renderCreate(res, { error: "Email already in use", success: null });
     }
 
-    const plain = password && password.trim() ? password : Math.random().toString(36).slice(-8);
+    const plain = password && password.trim()
+      ? password
+      : Math.random().toString(36).slice(-8);
+
     const hash = await bcrypt.hash(plain, 10);
 
-    await UserData.create({ name, email, password: hash, phone, department, role });
+    await UserData.create({
+      name,
+      email,
+      password: hash,
+      phone,
+      department,
+      role
+    });
 
-    // send email with credentials and login link
-    await sendUserEmail({ to: email, name, password: plain, created: true });
+    /* ❌ EMAIL SENDING DISABLED */
+    // await sendUserEmail({ to: email, name, password: plain, created: true });
 
-    return await renderCreate(res, { success: "User created successfully.", error: null });
+    return await renderCreate(res, {
+      success: "User created successfully.",
+      error: null
+    });
+
   } catch (err) {
     console.error("POST create user error:", err);
-    return await renderCreate(res, { error: "Error creating user.", success: null });
+    return await renderCreate(res, {
+      error: "Error creating user.",
+      success: null
+    });
   }
 });
 
-// List users
 router.get("/admin/users", verifyAdmin, async (req, res) => {
   try {
-    const users = await UserData.find().populate("department").sort({ name: 1 }).lean();
-    const success = req.query.success ? decodeURIComponent(req.query.success) : null;
+    const users = await UserData.find()
+      .populate("department")
+      .sort({ name: 1 })
+      .lean();
+
+    const success = req.query.success
+      ? decodeURIComponent(req.query.success)
+      : null;
+
     return res.render("users-list", { users, success, error: null });
   } catch (err) {
     console.error("GET users error:", err);
@@ -157,31 +141,9 @@ router.get("/admin/users", verifyAdmin, async (req, res) => {
   }
 });
 
-// Delete user
 router.get("/admin/users/delete/:id", verifyAdmin, async (req, res) => {
   try {
-    const id = req.params.id;
-    const user = await UserData.findById(id).lean();
-    if (!user) return res.redirect("/admin/users");
-
-    // Students cannot be removed if assignments pending
-    if (user.role === "Student") {
-      const pending = await require("../models/Assignment").countDocuments({
-        user: id,
-        status: { $in: ["Draft", "Submitted"] }
-      });
-
-      if (pending > 0) {
-        const users = await UserData.find().populate("department").sort({ name: 1 }).lean();
-        return res.render("users-list", {
-          users,
-          error: "Student has pending submissions and cannot be deleted.",
-          success: null
-        });
-      }
-    }
-
-    await UserData.findByIdAndDelete(id);
+    await UserData.findByIdAndDelete(req.params.id);
     return res.redirect("/admin/users?success=User+deleted+successfully");
   } catch (err) {
     console.error("DELETE user error:", err);
@@ -189,51 +151,49 @@ router.get("/admin/users/delete/:id", verifyAdmin, async (req, res) => {
   }
 });
 
-// Load edit form
 router.get("/admin/users/edit/:id", verifyAdmin, async (req, res) => {
   try {
     const user = await UserData.findById(req.params.id).lean();
     if (!user) return res.redirect("/admin/users");
+
     const departments = await getDepartments();
-    return res.render("edit-user", { user, departments, error: null, success: null });
+    return res.render("edit-user", {
+      user,
+      departments,
+      error: null,
+      success: null
+    });
   } catch (err) {
     console.error("GET edit user error:", err);
     return res.redirect("/admin/users");
   }
 });
 
-// Update user
 router.post("/admin/users/update/:id", verifyAdmin, async (req, res) => {
   try {
     const { name, email, phone, department, role, password } = req.body;
-    const id = req.params.id;
-
-    if (!name || !email || !department || !role) {
-      return await renderEdit(res, id, { error: "All fields are required", success: null });
-    }
-
-    const userBefore = await UserData.findById(id).lean();
-    if (!userBefore) return res.redirect("/admin/users");
-
     const update = { name, email, phone, department, role };
-    let plainPass = null;
 
-    if (password && password.trim() !== "") {
+    if (password && password.trim()) {
       update.password = await bcrypt.hash(password, 10);
-      plainPass = password;
     }
 
-    await UserData.findByIdAndUpdate(id, update);
+    await UserData.findByIdAndUpdate(req.params.id, update);
 
-    // Send email if email changed or password changed
-    if (userBefore.email !== email || plainPass) {
-      await sendUserEmail({ to: email, name, password: plainPass || "", created: false });
-    }
+    /* ❌ EMAIL DISABLED */
+    // await sendUserEmail({ to: email, name, password, created: false });
 
-    return await renderEdit(res, id, { success: "User updated", error: null });
+    return await renderEdit(res, req.params.id, {
+      success: "User updated",
+      error: null
+    });
+
   } catch (err) {
     console.error("POST update user error:", err);
-    return await renderEdit(res, req.params.id, { error: "Update error", success: null });
+    return await renderEdit(res, req.params.id, {
+      error: "Update error",
+      success: null
+    });
   }
 });
 
