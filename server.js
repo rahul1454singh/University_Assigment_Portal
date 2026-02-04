@@ -70,7 +70,7 @@ const Admin = require("./models/Admin");
       res.send("404 - Not Found");
     });
 
-    /* ===== GLOBAL ERROR HANDLER (SAFE) ===== */
+    /* ===== GLOBAL ERROR HANDLER ===== */
     app.use((err, req, res, next) => {
       console.error("Unhandled error:", err);
       res.status(500);
@@ -82,28 +82,32 @@ const Admin = require("./models/Admin");
       res.send("500 - Server error");
     });
 
+    /* ===== CREATE DEFAULT ADMIN (SAFE) ===== */
+    try {
+      const adminExists = await Admin.findOne({
+        email: "admin@university.com"
+      });
+
+      if (!adminExists) {
+        const hashed = await bcrypt.hash("admin", 10);
+        await Admin.create({
+          name: "Admin",
+          email: "admin@university.com",
+          password: hashed,
+          role: "admin"
+        });
+        console.log("Default admin created");
+      }
+    } catch (err) {
+      console.error("Admin creation failed:", err);
+    }
+
     /* ===== START SERVER ===== */
-   const port = process.env.PORT || 3000;
+    const port = process.env.PORT || 3000;
 
-app.listen(port, "0.0.0.0", async () => {
-  const adminExists = await Admin.findOne({
-    email: "admin@university.com"
-  });
-
-  if (!adminExists) {
-    const hashed = await bcrypt.hash("admin", 10);
-    await Admin.create({
-      name: "Admin",
-      email: "admin@university.com",
-      password: hashed,
-      role: "admin"
+    app.listen(port, "0.0.0.0", () => {
+      console.log(`Server running on port ${port}`);
     });
-    console.log("Default admin created");
-  }
-
-  console.log(`Server running on port ${port}`);
-});
-
 
   } catch (err) {
     console.error("Startup failed:", err);
