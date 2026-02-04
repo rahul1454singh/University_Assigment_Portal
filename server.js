@@ -41,19 +41,15 @@ const Admin = require("./models/Admin");
 
     const app = express();
 
-    /* ===== BODY PARSERS ===== */
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
     app.use(cookieParser());
 
-    /* ===== VIEW ENGINE ===== */
     app.set("views", path.join(__dirname, "views"));
     app.set("view engine", "ejs");
 
-    /* ===== STATIC FILES ===== */
     app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-    /* ===== ROUTES ===== */
     app.use("/", authRoutes);
     app.use("/", adminRoutes);
     app.use("/", departmentRoutes);
@@ -61,12 +57,10 @@ const Admin = require("./models/Admin");
     app.use("/", studentRoutes);
     app.use("/", professorRoutes);
 
-    /* ===== ROOT ROUTE (REQUIRED FOR RAILWAY) ===== */
     app.get("/", (req, res) => {
       res.status(200).send("University Assignment Portal is running");
     });
 
-    /* ===== 404 HANDLER ===== */
     app.use((req, res) => {
       res.status(404);
       if (req.xhr || req.headers.accept?.includes("application/json")) {
@@ -75,7 +69,6 @@ const Admin = require("./models/Admin");
       res.send("404 - Not Found");
     });
 
-    /* ===== GLOBAL ERROR HANDLER ===== */
     app.use((err, req, res, next) => {
       console.error("Unhandled error:", err);
       res.status(500);
@@ -87,12 +80,8 @@ const Admin = require("./models/Admin");
       res.send("500 - Server error");
     });
 
-    /* ===== CREATE DEFAULT ADMIN ===== */
     try {
-      const adminExists = await Admin.findOne({
-        email: "admin@university.com"
-      });
-
+      const adminExists = await Admin.findOne({ email: "admin@university.com" });
       if (!adminExists) {
         const hashed = await bcrypt.hash("admin", 10);
         await Admin.create({
@@ -107,10 +96,9 @@ const Admin = require("./models/Admin");
       console.error("Admin creation failed:", err);
     }
 
-    /* ===== START SERVER ===== */
     const port = process.env.PORT || 3000;
 
-    app.listen(port, "0.0.0.0", () => {
+    app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
 
