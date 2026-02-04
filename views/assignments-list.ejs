@@ -78,6 +78,67 @@
       .wrap { padding: 15px; border-radius: 0; }
       table { display: block; overflow-x: auto; }
     }
+
+    /* ==================== RESPONSIVE CSS (ONLY ADDITION) ==================== */
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 22px;
+      }
+
+      .btn-main,
+      .btn-secondary {
+        width: 100%;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      .btn-main {
+        margin-right: 0;
+      }
+
+      th, td {
+        font-size: 14px;
+        padding: 10px 8px;
+      }
+
+      td.actions {
+        white-space: normal;
+      }
+
+      .action-btn {
+        margin-bottom: 6px;
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .content-grow {
+        padding: 10px;
+      }
+
+      .wrap {
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .status {
+        font-size: 12px;
+        padding: 5px 10px;
+      }
+
+      .modal {
+        width: 90%;
+      }
+
+      footer {
+        padding: 20px 0;
+      }
+    }
   </style>
 </head>
 
@@ -178,7 +239,6 @@ function closeSubmittedModal() {
   modal.classList.remove("open");
 }
 
-// Close modal when clicking overlay
 window.onclick = function(event) {
   if (event.target == modal) {
     closeSubmittedModal();

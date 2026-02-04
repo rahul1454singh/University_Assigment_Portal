@@ -8,7 +8,6 @@
     :root{--blue:#4b6cb7;--bg:#f3f5f9}
     *{box-sizing:border-box}
     
-    /* Ensure body takes full height to push footer down */
     html, body { height: 100%; }
     body{
       margin:0;
@@ -21,7 +20,6 @@
     
     .nav{background:var(--blue);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
     
-    /* Main takes up remaining space */
     main.container{
       flex: 1 0 auto;
       max-width:980px;
@@ -67,13 +65,11 @@
     .pagination button{padding:6px 10px;border-radius:6px;border:none;background:var(--blue);color:#fff;cursor:pointer}
     .pagination button:disabled{background:#a0a0a0;cursor:default}
 
-    /* Modal */
     .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:1000}
     .modal{background:#fff;padding:18px;border-radius:10px;max-width:420px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.15)}
     .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
     .btn.secondary{background:#6c757d}
 
-    /* Footer Styling */
     .app-footer {
       flex-shrink: 0;
       padding: 20px;
@@ -81,6 +77,80 @@
       color: #5b6b6b;
       font-size: 13px;
       background: transparent;
+    }
+
+    /* ==================== RESPONSIVE CSS (ONLY ADDITION) ==================== */
+
+    @media (max-width: 900px) {
+      main.container {
+        width: 98%;
+        padding: 14px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .controls .left {
+        width: 100%;
+      }
+
+      .controls input,
+      .controls select {
+        width: 100%;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav {
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      main.container {
+        margin: 12px auto;
+        padding: 12px;
+      }
+
+      th, td {
+        font-size: 13px;
+        padding: 8px;
+      }
+
+      .btn {
+        font-size: 12px;
+        padding: 7px 8px;
+      }
+
+      .pagination {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .modal {
+        width: 92%;
+        padding: 14px;
+      }
+
+      .app-footer {
+        padding: 16px;
+        font-size: 12px;
+      }
     }
   </style>
 </head>
@@ -164,7 +234,6 @@
   </div>
 
   <script>
-    // Simple client search + pagination logic
     const rowsPerPage = 10;
     const tbody = document.querySelector('#table tbody');
     let allRows = Array.from(tbody.querySelectorAll('tr'));

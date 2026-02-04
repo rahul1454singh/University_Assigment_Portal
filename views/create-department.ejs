@@ -80,6 +80,49 @@
     }
     .ok{background:#d4edda;color:#155724}
     .err{background:#f8d7da;color:#721c24}
+
+    /* ==================== RESPONSIVE CSS (ONLY ADDITION) ==================== */
+
+    @media (max-width: 480px) {
+      body {
+        height: auto;
+        padding: 16px;
+      }
+
+      .box {
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      input,
+      select {
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      .btn {
+        padding: 11px;
+        font-size: 14px;
+      }
+
+      .msg {
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .box {
+        padding: 16px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -110,7 +153,5 @@
       <div class="msg err"><%= error %></div>
     <% } %>
   </div>
-
-  
 </body>
 </html>

@@ -95,6 +95,81 @@
     @media(max-width:600px){
       .btn{width:100%}
     }
+
+    /* ==================== RESPONSIVE CSS (ONLY ADDITION) ==================== */
+
+    @media (max-width: 768px) {
+      body {
+        padding: 18px;
+      }
+
+      .wrap {
+        padding: 18px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 14px;
+      }
+
+      .wrap {
+        padding: 16px;
+        border-radius: 8px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      label {
+        font-size: 14px;
+      }
+
+      input,
+      textarea,
+      select {
+        font-size: 13px;
+        padding: 9px 10px;
+      }
+
+      textarea {
+        min-height: 100px;
+      }
+
+      .file-row a {
+        width: 100%;
+        text-align: center;
+      }
+
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn {
+        width: 100%;
+        font-size: 14px;
+      }
+
+      .muted {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      h1 {
+        font-size: 18px;
+      }
+
+      .wrap {
+        padding: 14px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -110,7 +185,6 @@
     <div class="msg-success"><%= success %></div>
   <% } %>
 
-  <!-- 🔴 REJECTION MESSAGE (ONLY FOR REJECTED) -->
   <% if (assignment.status === 'Rejected') { %>
     <div class="msg-error">
       <strong>Rejected:</strong>
@@ -118,7 +192,6 @@
     </div>
   <% } %>
 
-  <!-- 🚫 LOCKED STATES -->
   <% if (assignment.status === 'Submitted' || assignment.status === 'Approved') { %>
     <div class="muted">This assignment cannot be edited.</div>
     <div style="margin-top:14px">
@@ -127,7 +200,6 @@
 
   <% } else { %>
 
-    <!-- ✅ EDIT / RESUBMIT FORM -->
     <form
       id="editForm"
       method="post"
@@ -183,7 +255,6 @@
   <% } %>
 </div>
 
-<!-- ✅ RESUBMIT SUCCESS HANDLER -->
 <script>
   const form = document.getElementById("editForm");
 

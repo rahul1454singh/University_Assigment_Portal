@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const { verifyAdmin } = require("../middleware/authMiddleware");
 const Department = require("../models/Department");
 const UserData = require("../models/UserData");
+const Notification = require("../models/Notification"); // ✅ ADDED
 
 const router = express.Router();
 
@@ -23,38 +24,13 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS || ""
   }
 });
-
-transporter.verify()
-  .then(() => console.log("SMTP ready"))
-  .catch(err => console.warn("SMTP verify failed:", err));
 */
 
 /* =====================================================
    ❌ EMAIL FUNCTION DISABLED
    ===================================================== */
 /*
-async function sendUserEmail({ to, name = "", password = "", created = true }) {
-  const base = (process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
-  const loginUrl = `${base}/login`;
-
-  const subject = created
-    ? "Your University Portal account has been created"
-    : "Your University Portal account was updated";
-
-  const html = `
-    <p>Hello ${name}</p>
-    <p>Email: ${to}</p>
-    <p>Password: ${password || "(unchanged)"}</p>
-    <p><a href="${loginUrl}">Login</a></p>
-  `;
-
-  await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to,
-    subject,
-    html
-  });
-}
+async function sendUserEmail({ to, name = "", password = "", created = true }) {}
 */
 
 const getDepartments = () => Department.find().sort({ name: 1 });
@@ -97,7 +73,8 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
 
     const hash = await bcrypt.hash(plain, 10);
 
-    await UserData.create({
+    // ✅ CHANGED: store created user
+    const newUser = await UserData.create({
       name,
       email,
       password: hash,
@@ -106,8 +83,43 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
       role
     });
 
-    /* ❌ EMAIL SENDING DISABLED */
-    // await sendUserEmail({ to: email, name, password: plain, created: true });
+    // =========================
+    // 🔔 NOTIFICATION ADDED
+    // =========================
+    let message = `
+<b>Note :-</b><br>
+Your account has been created successfully.<br><br>
+
+<b>Login Details</b><br>
+Username: <b>${email}</b><br>
+Password: <b>${plain}</b><br><br>
+
+<a href="/login" style="display:inline-block;padding:8px 14px;background:#4b6cb7;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;">
+Login Now
+</a>
+<br><br>
+`;
+
+    if (role === "student") {
+      message += `
+<b>This is for Student</b><br>
+Summary:<br>
+This dashboard helps students view assignments, check submission status, and track approvals or rejections easily.
+`;
+    } else {
+      message += `
+<b>This is for Professor</b><br>
+Summary:<br>
+This dashboard helps professors review assignments, approve or reject submissions, and track overall progress.
+`;
+    }
+
+    await Notification.create({
+      userId: newUser._id,
+      title: "Account Created Successfully",
+      message
+    });
+    // =========================
 
     return await renderCreate(res, {
       success: "User created successfully.",
@@ -179,9 +191,6 @@ router.post("/admin/users/update/:id", verifyAdmin, async (req, res) => {
     }
 
     await UserData.findByIdAndUpdate(req.params.id, update);
-
-    /* ❌ EMAIL DISABLED */
-    // await sendUserEmail({ to: email, name, password, created: false });
 
     return await renderEdit(res, req.params.id, {
       success: "User updated",

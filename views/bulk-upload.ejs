@@ -103,6 +103,56 @@
       h1 { font-size: 22px; }
       .content-grow { padding-top: 20px; }
     }
+
+    /* ==================== RESPONSIVE CSS (ONLY ADDITION) ==================== */
+
+    @media (max-width: 768px) {
+      .content-grow {
+        padding: 24px 12px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .content-grow {
+        padding: 16px 10px;
+      }
+
+      .container {
+        padding: 16px;
+        border-radius: 8px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      label {
+        font-size: 13px;
+      }
+
+      select,
+      input {
+        font-size: 13px;
+        padding: 9px;
+      }
+
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      footer {
+        padding: 20px 0;
+      }
+    }
   </style>
 </head>
 <body>
