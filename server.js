@@ -61,6 +61,11 @@ const Admin = require("./models/Admin");
     app.use("/", studentRoutes);
     app.use("/", professorRoutes);
 
+    /* ===== ROOT ROUTE (REQUIRED FOR RAILWAY) ===== */
+    app.get("/", (req, res) => {
+      res.status(200).send("University Assignment Portal is running");
+    });
+
     /* ===== 404 HANDLER ===== */
     app.use((req, res) => {
       res.status(404);
@@ -82,7 +87,7 @@ const Admin = require("./models/Admin");
       res.send("500 - Server error");
     });
 
-    /* ===== CREATE DEFAULT ADMIN (SAFE) ===== */
+    /* ===== CREATE DEFAULT ADMIN ===== */
     try {
       const adminExists = await Admin.findOne({
         email: "admin@university.com"
