@@ -59,7 +59,7 @@ const Admin = require("./models/Admin");
     app.use("/", departmentRoutes);
     app.use("/", userRoutes);
     app.use("/", studentRoutes);
-    // app.use("/", professorRoutes); // keep disabled for now
+    app.use("/", professorRoutes); // keep disabled for now
 
     /* ===== ROOT ROUTE ===== */
     app.get("/", (req, res) => {
@@ -108,15 +108,15 @@ const Admin = require("./models/Admin");
     }
 
     /* ===== START SERVER (RAILWAY SAFE) ===== */
-    const port = process.env.PORT;
+   const port = process.env.PORT;
 
-    if (!port) {
-      throw new Error("PORT not provided by Railway");
-    }
+if (!port) {
+  throw new Error("PORT not provided by Railway");
+}
 
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
 
   } catch (err) {
     console.error("Startup failed:", err);

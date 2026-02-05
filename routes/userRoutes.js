@@ -6,32 +6,17 @@ const nodemailer = require("nodemailer");
 const { verifyAdmin } = require("../middleware/authMiddleware");
 const Department = require("../models/Department");
 const UserData = require("../models/UserData");
-const Notification = require("../models/Notification"); // ✅ ADDED
+const Notification = require("../models/Notification");
 
 const router = express.Router();
 
 /* =====================================================
    ❌ SMTP DISABLED FOR RAILWAY
-   Gmail SMTP is blocked and causes infinite loading
+   Gmail SMTP is blocked on Railway hosting
    ===================================================== */
-/*
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === "true",
-  auth: {
-    user: process.env.SMTP_USER || "",
-    pass: process.env.SMTP_PASS || ""
-  }
-});
-*/
 
-/* =====================================================
-   ❌ EMAIL FUNCTION DISABLED
-   ===================================================== */
-/*
-async function sendUserEmail({ to, name = "", password = "", created = true }) {}
-*/
+// EMAIL IS INTENTIONALLY DISABLED ❌
+// Notification system is used instead ✅
 
 const getDepartments = () => Department.find().sort({ name: 1 });
 
@@ -50,7 +35,7 @@ router.get("/admin/users/create", verifyAdmin, async (req, res) => {
   try {
     await renderCreate(res, { error: null, success: null });
   } catch (err) {
-    console.error("GET create user:", err);
+    console.error(err);
     res.redirect("/admin/users");
   }
 });
@@ -64,62 +49,60 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
     }
 
     if (await UserData.findOne({ email })) {
-      return await renderCreate(res, { error: "Email already in use", success: null });
+      return await renderCreate(res, { error: "Email already exists", success: null });
     }
 
-    const plain = password && password.trim()
+    const plainPassword = password && password.trim()
       ? password
       : Math.random().toString(36).slice(-8);
 
-    const hash = await bcrypt.hash(plain, 10);
+    const hashed = await bcrypt.hash(plainPassword, 10);
 
-    // ✅ CHANGED: store created user
     const newUser = await UserData.create({
       name,
       email,
-      password: hash,
+      password: hashed,
       phone,
       department,
       role
     });
 
-    // =========================
-    // 🔔 NOTIFICATION ADDED
-    // =========================
+    // 🔔 NOTIFICATION MESSAGE (FIXED)
     let message = `
-<b>Note :-</b><br>
-Your account has been created successfully.<br><br>
+<b>Note:</b><br>
+Your University Portal account has been created successfully.<br><br>
 
 <b>Login Details</b><br>
-Username: <b>${email}</b><br>
-Password: <b>${plain}</b><br><br>
+Email: <b>${email}</b><br>
+Password: <b>${plainPassword}</b><br><br>
 
-<a href="/login" style="display:inline-block;padding:8px 14px;background:#4b6cb7;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;">
-Login Now
+<a href="/login" style="display:inline-block;padding:10px 16px;background:#4b6cb7;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;">
+Login to University Portal
 </a>
 <br><br>
 `;
 
     if (role === "student") {
       message += `
-<b>This is for Student</b><br>
-Summary:<br>
-This dashboard helps students view assignments, check submission status, and track approvals or rejections easily.
+<div style="color:red;font-weight:700;">
+Student Dashboard Summary:<br>
+You can upload assignments, view submission status, and track approval or rejection from professors.
+</div>
 `;
     } else {
       message += `
-<b>This is for Professor</b><br>
-Summary:<br>
-This dashboard helps professors review assignments, approve or reject submissions, and track overall progress.
+<div style="color:red;font-weight:700;">
+Professor Dashboard Summary:<br>
+You can review student assignments, approve or reject submissions, and monitor overall progress.
+</div>
 `;
     }
 
     await Notification.create({
       userId: newUser._id,
-      title: "Account Created Successfully",
+      title: "University Account Created",
       message
     });
-    // =========================
 
     return await renderCreate(res, {
       success: "User created successfully.",
@@ -127,83 +110,17 @@ This dashboard helps professors review assignments, approve or reject submission
     });
 
   } catch (err) {
-    console.error("POST create user error:", err);
+    console.error(err);
     return await renderCreate(res, {
-      error: "Error creating user.",
+      error: "Error creating user",
       success: null
     });
   }
 });
 
 router.get("/admin/users", verifyAdmin, async (req, res) => {
-  try {
-    const users = await UserData.find()
-      .populate("department")
-      .sort({ name: 1 })
-      .lean();
-
-    const success = req.query.success
-      ? decodeURIComponent(req.query.success)
-      : null;
-
-    return res.render("users-list", { users, success, error: null });
-  } catch (err) {
-    console.error("GET users error:", err);
-    return res.status(500).send("Error fetching users");
-  }
-});
-
-router.get("/admin/users/delete/:id", verifyAdmin, async (req, res) => {
-  try {
-    await UserData.findByIdAndDelete(req.params.id);
-    return res.redirect("/admin/users?success=User+deleted+successfully");
-  } catch (err) {
-    console.error("DELETE user error:", err);
-    return res.redirect("/admin/users");
-  }
-});
-
-router.get("/admin/users/edit/:id", verifyAdmin, async (req, res) => {
-  try {
-    const user = await UserData.findById(req.params.id).lean();
-    if (!user) return res.redirect("/admin/users");
-
-    const departments = await getDepartments();
-    return res.render("edit-user", {
-      user,
-      departments,
-      error: null,
-      success: null
-    });
-  } catch (err) {
-    console.error("GET edit user error:", err);
-    return res.redirect("/admin/users");
-  }
-});
-
-router.post("/admin/users/update/:id", verifyAdmin, async (req, res) => {
-  try {
-    const { name, email, phone, department, role, password } = req.body;
-    const update = { name, email, phone, department, role };
-
-    if (password && password.trim()) {
-      update.password = await bcrypt.hash(password, 10);
-    }
-
-    await UserData.findByIdAndUpdate(req.params.id, update);
-
-    return await renderEdit(res, req.params.id, {
-      success: "User updated",
-      error: null
-    });
-
-  } catch (err) {
-    console.error("POST update user error:", err);
-    return await renderEdit(res, req.params.id, {
-      error: "Update error",
-      success: null
-    });
-  }
+  const users = await UserData.find().populate("department").lean();
+  res.render("users-list", { users, success: null, error: null });
 });
 
 module.exports = router;
