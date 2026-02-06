@@ -162,11 +162,11 @@
       </a>
     </div>
 
-    <% if (error) { %>
+    <% if (typeof error !== 'undefined' && error) { %>
       <div class="msg-error"><%= error %></div>
     <% } %>
 
-    <% if (success) { %>
+    <% if (typeof success !== 'undefined' && success) { %>
       <div class="msg-success"><%= success %></div>
     <% } %>
 
@@ -175,14 +175,14 @@
       <div class="row">
         <div class="col">
           <label>Title</label>
-          <input type="text" name="title" required>
+          <input type="text" name="title" placeholder="Enter assignment title" required>
         </div>
       </div>
 
       <div class="row">
         <div class="col">
           <label>Description</label>
-          <textarea name="description"></textarea>
+          <textarea name="description" placeholder="Briefly describe your submission"></textarea>
         </div>
       </div>
 
@@ -191,12 +191,14 @@
           <label>Professor</label>
           <select name="professor" required>
             <option value="">Select Professor</option>
-            <% if (professors && professors.length) { %>
+            <% if (typeof professors !== 'undefined' && professors && professors.length) { %>
               <% professors.forEach(prof => { %>
                 <option value="<%= prof._id %>">
                   <%= prof.fullName || prof.name %>
                 </option>
               <% }) %>
+            <% } else { %>
+              <option value="" disabled>No professors found</option>
             <% } %>
           </select>
         </div>

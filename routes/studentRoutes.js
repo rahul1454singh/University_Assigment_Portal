@@ -75,56 +75,75 @@ router.get("/student/assignments", verifyStudent, async (req, res) => {
   res.render("assignments-list", { assignments, user: req.user });
 });
 
-/* ===================== UPLOAD PAGE ===================== */
+/* ===================== UPLOAD PAGE (FIXED) ===================== */
 
 router.get("/student/assignments/upload", verifyStudent, async (req, res) => {
-  const professors = await User.find({
-    role: "Professor",
+  // Use Regex for role to catch 'Professor' or 'professor'
+  // We search by department ID. If that fails, the fallback below catches all professors.
+  let professors = await User.find({
+    role: { $regex: /^professor$/i },
     department: req.user.department
   })
+  .select("_id name fullName")
+  .lean();
+
+  // FINAL FALLBACK: If the department filter is causing the empty list, 
+  // show all professors so the student is never stuck with an empty dropdown.
+  if (!professors || professors.length === 0) {
+    professors = await User.find({ 
+      role: { $regex: /^professor$/i } 
+    })
     .select("_id name fullName")
     .lean();
+  }
 
   res.render("upload-assignment", {
     error: null,
     success: null,
-    professors
+    professors,
+    user: req.user
   });
 });
 
-/* ===================== BULK UPLOAD PAGE ===================== */
+/* ===================== BULK UPLOAD PAGE (FIXED) ===================== */
 
 router.get("/student/assignments/bulk-upload", verifyStudent, async (req, res) => {
-  const professors = await User.find({
-    role: "Professor",
+  let professors = await User.find({
+    role: { $regex: /^professor$/i },
     department: req.user.department
-  })
-    .select("_id name fullName")
-    .lean();
+  }).select("_id name fullName").lean();
+
+  if (!professors || professors.length === 0) {
+    professors = await User.find({ role: { $regex: /^professor$/i } }).select("_id name fullName").lean();
+  }
 
   res.render("bulk-upload", {
     professors,
-    error: null
+    error: null,
+    user: req.user
   });
 });
 
 /* ===================== BULK UPLOAD POST ===================== */
 
 router.post("/student/assignments/bulk-upload", verifyStudent, async (req, res) => {
-  const professors = await User.find({
-    role: "Professor",
+  let professors = await User.find({
+    role: { $regex: /^professor$/i },
     department: req.user.department
-  })
-    .select("_id name fullName")
-    .lean();
+  }).select("_id name fullName").lean();
+
+  if (!professors || professors.length === 0) {
+    professors = await User.find({ role: { $regex: /^professor$/i } }).select("_id name fullName").lean();
+  }
 
   res.render("bulk-upload", {
     professors,
-    error: "Bulk upload feature is coming soon. Please upload assignments one by one."
+    error: "Bulk upload feature is coming soon. Please upload assignments one by one.",
+    user: req.user
   });
 });
 
-/* ===================== UPLOAD POST ===================== */
+/* ===================== UPLOAD POST (FIXED) ===================== */
 
 router.post(
   "/student/assignments/upload",
@@ -132,18 +151,21 @@ router.post(
   upload.single("file"),
   async (req, res) => {
 
-    const professors = await User.find({
-      role: "Professor",
+    let professors = await User.find({
+      role: { $regex: /^professor$/i },
       department: req.user.department
-    })
-      .select("_id name fullName")
-      .lean();
+    }).select("_id name fullName").lean();
+
+    if (!professors || professors.length === 0) {
+      professors = await User.find({ role: { $regex: /^professor$/i } }).select("_id name fullName").lean();
+    }
 
     if (!req.file) {
       return res.render("upload-assignment", {
         error: "Upload PDF file",
         success: null,
-        professors
+        professors,
+        user: req.user
       });
     }
 
@@ -167,7 +189,8 @@ router.post(
     res.render("upload-assignment", {
       success: "Uploaded successfully",
       error: null,
-      professors
+      professors,
+      user: req.user
     });
   }
 );
@@ -185,12 +208,14 @@ router.get("/student/assignments/:id/edit", verifyStudent, async (req, res) => {
     return res.status(403).send("This assignment cannot be edited");
   }
 
-  const professors = await User.find({
-    role: "Professor",
+  let professors = await User.find({
+    role: { $regex: /^professor$/i },
     department: req.user.department
-  })
-    .select("_id name fullName")
-    .lean();
+  }).select("_id name fullName").lean();
+
+  if (!professors || professors.length === 0) {
+    professors = await User.find({ role: { $regex: /^professor$/i } }).select("_id name fullName").lean();
+  }
 
   res.render("edit-assignment", {
     assignment,
@@ -213,12 +238,14 @@ router.get("/student/assignments/:id", verifyStudent, async (req, res) => {
     return res.status(404).send("Assignment not found");
   }
 
-  const professors = await User.find({
-    role: "Professor",
+  let professors = await User.find({
+    role: { $regex: /^professor$/i },
     department: req.user.department
-  })
-    .select("_id name fullName")
-    .lean();
+  }).select("_id name fullName").lean();
+
+  if (!professors || professors.length === 0) {
+    professors = await User.find({ role: { $regex: /^professor$/i } }).select("_id name fullName").lean();
+  }
 
   res.render("assignment-details", {
     assignment,

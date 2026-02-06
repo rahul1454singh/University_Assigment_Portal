@@ -81,10 +81,13 @@
     /* Modal Styles */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 2200; }
     .modal-overlay.open { display: flex; }
-    .modal { width: 520px; background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-    .modal h3 { margin: 0 0 8px; }
-    .modal-actions { display:flex; justify-content:flex-end; margin-top: 12px; }
-    .btn-cancel { padding:8px 12px; background:#6c757d; color:#fff; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
+    .modal { width: 520px; background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal h3 { margin: 0 0 12px; font-size: 20px; }
+    .modal p { color: #555; line-height: 1.5; }
+    .modal-actions { display:flex; justify-content:flex-end; gap: 10px; margin-top: 20px; }
+    
+    .btn-cancel { padding:8px 16px; background:#6c757d; color:#fff; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
+    .btn-confirm-delete { padding:8px 16px; background:#e74c3c; color:#fff; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
 
     /* Footer Styles */
     footer {
@@ -103,7 +106,6 @@
       .wrap { padding: 15px; border-radius: 0; }
       table { display: block; overflow-x: auto; }
       
-      /* Optional: Make buttons full width on very small screens */
       .btn-main, .btn-secondary {
         flex: 1 1 auto;
         text-align: center;
@@ -155,7 +157,7 @@
             <% } %>
 
             <button class="action-btn delete-btn"
-              onclick="deleteAssignment('<%= a._id %>')">
+              onclick="openDeleteModal(event, '<%= a._id %>', '<%= a.title %>')">
               Delete
             </button>
           </td>
@@ -181,39 +183,75 @@
   </div>
 </div>
 
+<div id="deleteModal" class="modal-overlay">
+  <div class="modal">
+    <h3>Delete "<span id="deleteTitle"></span>"?</h3>
+    <p>Delete assignment "<span id="deleteDetail"></span>" — this cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-confirm-delete" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
 <script>
 function openDetails(id) {
   location.href = "/student/assignments/" + id;
 }
 
-function deleteAssignment(id) {
-  if (!confirm("Are you sure?")) return;
-  fetch(`/student/assignments/${id}/delete`, { method: "POST" })
-    .then(r => r.json())
-    .then(j => {
-      if (!j.success) alert(j.message);
-      else location.reload();
-    });
+// Logic for custom Delete Modal
+const deleteModal = document.getElementById("deleteModal");
+const deleteTitle = document.getElementById("deleteTitle");
+const deleteDetail = document.getElementById("deleteDetail");
+const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+let currentDeleteId = null;
+
+function openDeleteModal(e, id, title) {
+  e.stopPropagation();
+  currentDeleteId = id;
+  deleteTitle.innerText = title;
+  deleteDetail.innerText = title;
+  deleteModal.classList.add("open");
 }
 
-const modal = document.getElementById("submittedModal");
+function closeDeleteModal() {
+  deleteModal.classList.remove("open");
+  currentDeleteId = null;
+}
+
+confirmDeleteBtn.onclick = function() {
+  if (!currentDeleteId) return;
+  
+  fetch(`/student/assignments/${currentDeleteId}/delete`, { method: "POST" })
+    .then(r => r.json())
+    .then(j => {
+      if (!j.success) {
+        alert(j.message);
+        closeDeleteModal();
+      } else {
+        location.reload();
+      }
+    });
+};
+
+// Logic for Edit Restriction Modal
+const editModal = document.getElementById("submittedModal");
 const modalStatus = document.getElementById("modalStatus");
 
 function openSubmittedModal(e, title, status) {
   e.stopPropagation();
   modalStatus.innerText = status;
-  modal.classList.add("open");
+  editModal.classList.add("open");
 }
 
 function closeSubmittedModal() {
-  modal.classList.remove("open");
+  editModal.classList.remove("open");
 }
 
-// Close modal when clicking overlay
+// Close modals when clicking overlay
 window.onclick = function(event) {
-  if (event.target == modal) {
-    closeSubmittedModal();
-  }
+  if (event.target == editModal) closeSubmittedModal();
+  if (event.target == deleteModal) closeDeleteModal();
 }
 </script>
 </body>
