@@ -29,20 +29,21 @@ function redirectByRole(role) {
 }
 
 /* =====================================================
-   🔐 Mail transporter (DISABLED ON RAILWAY)
-   Gmail SMTP is blocked on Railway and causes 502 errors
+    🔐 Mail transporter (FIXED FOR PORT 587)
    ===================================================== */
-/*
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: Number(process.env.SMTP_PORT) || 587,
-  secure: false,
+  secure: false, 
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
+  },
+  tls: {
+    rejectUnauthorized: false,
+    minVersion: "TLSv1.2"
   }
 });
-*/
 
 router.get("/", (req, res) => res.redirect("/login"));
 
@@ -99,57 +100,56 @@ router.get("/logout", (req, res) => {
   return res.redirect("/login");
 });
 
-// ================= FORGOT PASSWORD =================
+// ================= FORGOT PASSWORD (OTP SYSTEM) =================
 
-// 1) Show "Forgot Password" page
 router.get("/forgot-password", (req, res) => {
   res.render("forgot-password", { error: null, success: null });
 });
 
-// 2) Handle email submit (EMAIL SENDING DISABLED)
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
+    
+    let account = await UserData.findOne({ email });
+    if (!account) {
+      account = await Admin.findOne({ email });
+    }
 
-    const user = await UserData.findOne({ email });
-    if (!user) {
+    if (!account) {
       return res.render("forgot-password", {
         error: "No account found with this email.",
         success: null
       });
     }
 
-    const token = crypto.randomBytes(32).toString("hex");
+    if (account.role) {
+      account.role = account.role.toLowerCase();
+    }
 
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 60 * 60 * 1000;
-    await user.save();
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    const resetURL = `${req.protocol}://${req.get("host")}/reset-password/${token}`;
+    account.resetPasswordToken = otp; 
+    account.resetPasswordExpires = Date.now() + 60000; 
+    
+    await account.save();
 
-    /* =====================================================
-       ❌ EMAIL DISABLED ON RAILWAY (SMTP BLOCKED)
-       ===================================================== */
-    /*
     await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: user.email,
-      subject: "Password Reset - University Assignment Portal",
+      from: process.env.FROM_EMAIL,
+      to: account.email,
+      subject: "Your Password Reset OTP",
       html: `
-        <p>You requested a password reset.</p>
-        <p>Click this link to reset your password:</p>
-        <p><a href="${resetURL}">${resetURL}</a></p>
-        <p>This link will expire in 1 hour.</p>
+        <div style="font-family: Arial, sans-serif; text-align: center;">
+          <h2>Password Reset Request</h2>
+          <p>Use the following 4-digit OTP to reset your password. This code is valid for <b>1 minute</b>.</p>
+          <h1 style="color: #4b6cb7; letter-spacing: 5px;">${otp}</h1>
+        </div>
       `
     });
-    */
 
-    return res.render("forgot-password", {
-      error: null,
-      success: "Password reset feature is temporarily disabled."
-    });
+    return res.render("verify-otp", { email, error: null });
+
   } catch (err) {
-    console.error(err);
+    console.error("DEBUG - Validation Error:", err);
     return res.render("forgot-password", {
       error: "Something went wrong. Please try again.",
       success: null
@@ -157,67 +157,80 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
-// 3) Show Reset Password form
-router.get("/reset-password/:token", async (req, res) => {
+router.post("/verify-otp", async (req, res) => {
   try {
-    const token = req.params.token;
-
-    const user = await UserData.findOne({
-      resetPasswordToken: token,
+    const { email, otp } = req.body;
+    
+    let account = await UserData.findOne({
+      email,
+      resetPasswordToken: otp,
       resetPasswordExpires: { $gt: Date.now() }
     });
 
-    if (!user) {
-      return res.send("Reset link is invalid or has expired.");
-    }
-
-    return res.render("reset-password", {
-      error: null,
-      success: null,
-      token
-    });
-  } catch (err) {
-    console.error(err);
-    return res.send("Something went wrong.");
-  }
-});
-
-// 4) Handle new password submit
-router.post("/reset-password/:token", async (req, res) => {
-  try {
-    const token = req.params.token;
-    const { password } = req.body;
-
-    const user = await UserData.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return res.render("reset-password", {
-        error: "Reset link is invalid or has expired.",
-        success: null,
-        token: null
+    if (!account) {
+      account = await Admin.findOne({
+        email,
+        resetPasswordToken: otp,
+        resetPasswordExpires: { $gt: Date.now() }
       });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-    user.password = hashed;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
+    if (!account) {
+      return res.render("verify-otp", { 
+        email, 
+        error: "Invalid or expired OTP. Please request a new one." 
+      });
+    }
 
     return res.render("reset-password", {
       error: null,
-      success: "Your password has been changed.",
-      token: null
+      success: null,
+      email: email 
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect("/forgot-password");
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    let account = await UserData.findOne({ email });
+    if (!account) {
+      account = await Admin.findOne({ email });
+    }
+
+    if (!account) {
+      return res.render("reset-password", {
+        error: "Session expired. Please start again.",
+        success: null,
+        email: null
+      });
+    }
+
+    if (account.role) {
+      account.role = account.role.toLowerCase();
+    }
+
+    // FIX: Just assign plain password. Model's pre-save handles hashing.
+    account.password = password; 
+    account.resetPasswordToken = undefined;
+    account.resetPasswordExpires = undefined;
+    await account.save();
+
+    return res.render("reset-password", {
+      error: null,
+      success: "Your password has been changed successfully.",
+      email: null
     });
   } catch (err) {
     console.error(err);
     return res.render("reset-password", {
-      error: "Something went wrong. Please try again.",
+      error: "Something went wrong.",
       success: null,
-      token: req.params.token
+      email: req.body.email
     });
   }
 });

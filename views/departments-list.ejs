@@ -8,7 +8,6 @@
     :root{--blue:#4b6cb7;--bg:#f3f5f9}
     *{box-sizing:border-box}
     
-    /* Ensure body takes full height to push footer down */
     html, body { height: 100%; }
     body{
       margin:0;
@@ -21,7 +20,6 @@
     
     .nav{background:var(--blue);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
     
-    /* Main takes up remaining space */
     main.container{
       flex: 1 0 auto;
       max-width:980px;
@@ -73,7 +71,26 @@
     .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
     .btn.secondary{background:#6c757d}
 
-    /* Footer Styling */
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #d4edda;
+      color: #155724;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 2100;
+      font-weight: 600;
+      border-left: 5px solid #28a745;
+    }
+    .toast.show { display: flex; animation: fadeInRight 0.3s ease; }
+    @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
     .app-footer {
       flex-shrink: 0;
       padding: 20px;
@@ -92,6 +109,11 @@
       <a href="/admin/departments/create" style="color:#fff;text-decoration:none">Create Department</a>
     </div>
   </header>
+
+  <div id="successToast" class="toast">
+    <span id="toastMsg">Success: Department deleted successfully</span>
+    <span style="cursor:pointer; font-size: 18px;" onclick="this.parentElement.classList.remove('show')">×</span>
+  </div>
 
   <main class="container">
     <% if (typeof error !== 'undefined' && error) { %>
@@ -164,7 +186,6 @@
   </div>
 
   <script>
-    // Simple client search + pagination logic
     const rowsPerPage = 10;
     const tbody = document.querySelector('#table tbody');
     let allRows = Array.from(tbody.querySelectorAll('tr'));
@@ -175,6 +196,14 @@
     const next = document.getElementById('next');
     const pageEl = document.getElementById('page');
     const pagesEl = document.getElementById('pages');
+    const toast = document.getElementById('successToast');
+    const toastMsg = document.getElementById('toastMsg');
+
+    function showToast(msg) {
+      toastMsg.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
 
     function render() {
       const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
@@ -225,18 +254,28 @@
         const res = await fetch(`/admin/departments/${toDelete.id}`, { method: 'DELETE' });
         const json = await res.json();
         if (!res.ok) { alert(json.message || 'Delete failed'); return; }
+        
+        // Remove from UI
         toDelete.row.remove();
         allRows = Array.from(tbody.querySelectorAll('tr'));
         filtered = allRows.slice();
         const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
         if (page > totalPages) page = totalPages;
         render();
+
+        // SHOW SUCCESS TOAST
+        showToast("Success: Department deleted successfully");
+
       } catch (err) { console.error(err); alert('Network/server error'); }
       finally { confirm.disabled = false; confirm.textContent = 'Delete'; backdrop.style.display = 'none'; toDelete = null; }
     };
 
     attachDeletes(); 
     render();
+
+    // Check if server sent a success message via URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('success')) showToast(urlParams.get('success'));
   </script>
 </body>
 </html>

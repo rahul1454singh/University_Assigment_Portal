@@ -28,6 +28,17 @@ async function connectDB({ retries = 3, retryDelayMs = 2000 } = {}) {
       await mongoose.connect(uri, options);
       console.log("✅ MongoDB Connected");
 
+      /* ===================== DATA CLEANUP FIX ===================== */
+      // This specifically fixes the "Student" vs "student" enum error
+      const UserData = mongoose.model("UserData");
+      if (UserData) {
+        await UserData.updateMany({ role: "Student" }, { $set: { role: "student" } });
+        await UserData.updateMany({ role: "Professor" }, { $set: { role: "professor" } });
+        await UserData.updateMany({ role: "Hod" }, { $set: { role: "hod" } });
+        console.log("🛠️ Database roles normalized to lowercase");
+      }
+      /* ============================================================= */
+
       // SAFE connection events (NO shutdown)
       mongoose.connection.on("error", err => {
         console.error("Mongo Error:", err);

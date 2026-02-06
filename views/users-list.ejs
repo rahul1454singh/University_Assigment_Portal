@@ -8,7 +8,6 @@
     :root { --blue:#4b6cb7; --card:#fff; --bg:#f3f5f9; }
     * { box-sizing: border-box; }
     
-    /* Ensure the body takes full height for a sticky footer */
     html, body { height: 100%; }
     body { 
       font-family: "Segoe UI", sans-serif; 
@@ -27,7 +26,6 @@
     .navbar a { color:#fff; text-decoration:none; font-weight:600; margin-left:12px; }
     .btn-create { background:var(--blue); color:#fff; padding:8px 12px; border-radius:6px; text-decoration:none; font-weight:700; }
 
-    /* flex-grow pushes the footer down */
     .container { 
       max-width:1000px; 
       margin:18px auto; 
@@ -37,7 +35,7 @@
       box-shadow:0 3px 10px rgba(0,0,0,.08);
       flex: 1 0 auto; 
       width: 95%;
-      overflow: hidden; /* Keeps content from spilling over rounded corners */
+      overflow: hidden;
     }
 
     h1 { text-align:center; margin:6px 0 18px; font-size:22px; }
@@ -45,44 +43,51 @@
     .filters { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
     .filters input, .filters select { padding:8px 10px; height:38px; border-radius:6px; border:1px solid #ccc; font-size:13px; min-width:180px; }
 
-    /* --- NEW RESPONSIVE TABLE STYLES --- */
     .table-responsive {
       width: 100%;
-      overflow-x: auto; /* Enables horizontal scroll inside the box */
+      overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       margin-top: 6px;
       border: 1px solid #ddd;
       border-radius: 8px;
     }
 
-    table { width:100%; border-collapse:collapse; min-width: 800px; /* Prevents columns from squishing */ }
+    table { width:100%; border-collapse:collapse; min-width: 800px; }
     th, td { padding:10px; border:1px solid #ddd; font-size:14px; text-align:left; }
     th { background:var(--blue); color:#fff; font-weight:700; }
     tr:nth-child(even){ background:#f2f6ff } tr:nth-child(odd){ background:#e6edff }
 
-    .btn { text-decoration:none; padding:6px 10px; border-radius:5px; color:#fff; font-weight:700; font-size:12px; margin-right:6px; display:inline-block; }
+    .btn { text-decoration:none; padding:6px 10px; border-radius:5px; color:#fff; font-weight:700; font-size:12px; margin-right:6px; display:inline-block; border:none; cursor:pointer; }
     .btn-edit { background:#ffc107; color:#1b1b1b; }
-    .btn-delete { background:#dc3545; }
+    .btn-delete { background:#dc3545; color:#fff; }
 
     .pagination { text-align:center; margin-top:12px; }
     .pagination button { padding:6px 10px; margin:0 6px; border:0; border-radius:6px; background:var(--blue); color:#fff; cursor:pointer; font-weight:700; }
     .pagination button:disabled { background:#9aa9d6; cursor:default; }
 
-    /* toast */
     .toast { position:fixed; right:20px; top:20px; z-index:9999; display:none; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,.12); overflow:hidden; }
     .toast .inner { padding:12px 14px; font-weight:600; display:flex; align-items:center; gap:8px; }
     .toast.success { background:#d4edda; color:#155724; }
     .toast.error { background:#f8d7da; color:#721c24; }
     .toast .close { margin-left:8px; cursor:pointer; opacity:.8; font-weight:700; }
 
-    /* footer */
-    .app-footer { 
-      padding: 16px; 
-      text-align: center; 
-      color: #5b6b6b; 
-      font-size: 13px;
-      flex-shrink: 0;
+    .app-footer { padding: 16px; text-align: center; color: #5b6b6b; font-size: 13px; flex-shrink: 0; }
+
+    /* MODAL STYLES */
+    .modal-overlay { 
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); 
+      display: none; justify-content: center; align-items: center; 
+      z-index: 2000; backdrop-filter: blur(3px);
     }
+    .modal-box { 
+      width: 340px; background: #fff; border-radius: 20px; 
+      padding: 30px 15px; text-align:center; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-btn-container { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+    .modal-btn { padding: 10px 25px; border-radius: 20px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; text-decoration: none; }
+    .modal-btn.no { background: #f0f0f0; color: #000; }
+    .modal-btn.yes { background: #dc3545; color: #fff; }
 
     @media (max-width:800px){
       .filters { flex-direction:column; align-items:stretch; }
@@ -108,15 +113,15 @@
     </div>
 
     <div class="filters">
-      <input id="searchInput" type="text" placeholder="Search by name or email" aria-label="Search by name or email">
-      <select id="roleFilter" aria-label="Filter by role">
+      <input id="searchInput" type="text" placeholder="Search by name or email">
+      <select id="roleFilter">
         <option value="">All Roles</option>
         <option>Student</option>
         <option>Professor</option>
         <option>HOD</option>
       </select>
 
-      <select id="deptFilter" aria-label="Filter by department">
+      <select id="deptFilter">
         <option value="">All Departments</option>
         <% 
           const deptSet = {};
@@ -143,7 +148,7 @@
               <td><%= u.status ? u.status : "Active" %></td>
               <td>
                 <a href="/admin/users/edit/<%= u._id %>" class="btn btn-edit">Edit</a>
-                <a href="/admin/users/delete/<%= u._id %>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
+                <button class="btn btn-delete" onclick="confirmDelete('<%= u._id %>', '<%= u.name %>')">Delete</button>
               </td>
             </tr>
           <% }) %>
@@ -151,10 +156,21 @@
       </table>
     </div>
 
-    <div class="pagination" aria-label="Pagination controls">
+    <div class="pagination">
       <button id="prevBtn">Prev</button>
       <span id="pageInfo">1 / 1</span>
       <button id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="modal-overlay">
+    <div class="modal-box">
+      <h2 id="modalName" style="margin:0; font-size:20px;">Delete User?</h2>
+      <p style="color:#666; font-size:14px; margin-top:10px;">Are you sure you want to delete this user? This action cannot be undone.</p>
+      <div class="modal-btn-container">
+        <button onclick="closeModal()" class="modal-btn no">Cancel</button>
+        <a id="modalConfirmBtn" href="#" class="modal-btn yes">Delete</a>
+      </div>
     </div>
   </div>
 
@@ -164,40 +180,34 @@
   </footer>
 
   <script>
+    // Modal Functions
+    function confirmDelete(id, name) {
+        document.getElementById('modalName').innerText = 'Delete ' + name + '?';
+        document.getElementById('modalConfirmBtn').href = '/admin/users/delete/' + id;
+        document.getElementById('deleteModal').classList.add('open');
+    }
+    function closeModal() {
+        document.getElementById('deleteModal').classList.remove('open');
+    }
+
+    // Toast Logic
     (function() {
       const success = <%- JSON.stringify(typeof success !== 'undefined' ? success : null) %>;
       const error   = <%- JSON.stringify(typeof error !== 'undefined' ? error : null) %>;
-
       const toast = document.getElementById('toast');
       const inner = document.getElementById('toast-inner');
 
       function showToast(message, isError = false) {
         inner.textContent = (isError ? 'Error: ' : 'Success: ') + message;
-        if (!inner.querySelector('.close')) {
-          const closeBtn = document.createElement('span');
-          closeBtn.className = 'close';
-          closeBtn.textContent = '✕';
-          closeBtn.setAttribute('role', 'button');
-          closeBtn.onclick = () => toast.style.display = 'none';
-          inner.appendChild(closeBtn);
-        }
         toast.className = 'toast ' + (isError ? 'error' : 'success');
         toast.style.display = 'block';
-        clearTimeout(showToast._hideTimer);
-        showToast._hideTimer = setTimeout(() => toast.style.display = 'none', 4000);
-        try {
-          if (history.replaceState) {
-            const u = new URL(window.location);
-            u.searchParams.delete('success');
-            u.searchParams.delete('error');
-            history.replaceState(null, '', u.pathname + u.search);
-          }
-        } catch (e) { }
+        setTimeout(() => toast.style.display = 'none', 4000);
       }
       if (success) showToast(success, false);
       if (error) showToast(error, true);
     })();
 
+    // Filter and Pagination Logic
     (function () {
       const rowsPerPage = 5;
       const table = document.getElementById('usersTable');
@@ -209,38 +219,40 @@
       const prevBtn = document.getElementById('prevBtn');
       const nextBtn = document.getElementById('nextBtn');
       const pageInfo = document.getElementById('pageInfo');
+      
       let visibleRows = allRows.slice();
       let currentPage = 1;
-      function normalize(s) { return String(s || '').trim().toLowerCase(); }
+
       function applyFilters() {
-        const q = normalize(searchInput.value);
-        const role = normalize(roleFilter.value);
-        const dept = normalize(deptFilter.value);
+        const q = searchInput.value.toLowerCase();
+        const role = roleFilter.value.toLowerCase();
+        const dept = deptFilter.value.toLowerCase();
+        
         visibleRows = allRows.filter(row => {
-          const name = normalize(row.cells[0].textContent);
-          const email = normalize(row.cells[1].textContent);
-          const r = normalize(row.cells[2].textContent);
-          const d = normalize(row.cells[3].textContent);
-          return (!q || name.includes(q) || email.includes(q)) && (!role || r === role) && (!dept || d === dept);
+          const name = row.cells[0].textContent.toLowerCase();
+          const email = row.cells[1].textContent.toLowerCase();
+          const r = row.cells[2].textContent.toLowerCase();
+          const d = row.cells[3].textContent.toLowerCase();
+          return (!q || name.includes(q) || email.includes(q)) && 
+                 (!role || r === role) && 
+                 (!dept || d === dept);
         });
         currentPage = 1;
         render();
       }
+
       function render() {
         const totalPages = Math.max(1, Math.ceil(visibleRows.length / rowsPerPage));
         const start = (currentPage - 1) * rowsPerPage;
         const end = start + rowsPerPage;
         allRows.forEach(r => r.style.display = 'none');
         visibleRows.slice(start, end).forEach(r => r.style.display = '');
-        pageInfo.textContent = `${currentPage} / ${totalPages}`;
+        pageInfo.textContent = currentPage + " / " + totalPages;
         prevBtn.disabled = currentPage <= 1;
         nextBtn.disabled = currentPage >= totalPages;
       }
-      let searchTimer = null;
-      searchInput.addEventListener('input', () => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(applyFilters, 150);
-      });
+
+      searchInput.addEventListener('input', applyFilters);
       roleFilter.addEventListener('change', applyFilters);
       deptFilter.addEventListener('change', applyFilters);
       prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); } });

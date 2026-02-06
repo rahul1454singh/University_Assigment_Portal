@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Verify OTP</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .box {
+      background: #fff;
+      border-radius: 15px;
+      padding: 35px;
+      width: 360px;
+      max-width: 100%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    h2 { margin-bottom: 10px; color: #333; }
+    p { font-size: 14px; color: #666; margin-bottom: 20px; }
+    
+    .otp-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .otp-input {
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      box-sizing: border-box; /* Ensures padding doesn't break size */
+    }
+    .otp-input:focus { border-color: #4b6cb7; }
+    
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #4b6cb7;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      box-sizing: border-box; /* Matches input width exactly */
+    }
+    button:hover { background: #3551a1; }
+    button:disabled { background: #8ba2d4; cursor: not-allowed; }
+
+    .error { color: red; margin-bottom: 8px; font-size: 14px; }
+
+    /* Red Countdown Timer Style */
+    #timer-container {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+    #timer {
+      color: #ff0000; /* Red color as requested */
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Verify OTP</h2>
+    <p>Sent to: <b><%= email %></b></p>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <form action="/verify-otp" method="POST" id="otpForm">
+      <input type="hidden" name="email" value="<%= email %>">
+      <div class="otp-container">
+        <input type="text" class="otp-input" maxlength="1" required autofocus>
+        <input type="text" class="otp-input" maxlength="1" required>
+        <input type="text" class="otp-input" maxlength="1" required>
+        <input type="text" class="otp-input" maxlength="1" required>
+      </div>
+      <input type="hidden" name="otp" id="combinedOtp">
+      <button type="submit" id="verifyBtn">Verify Code</button>
+    </form>
+
+    <div id="timer-container">
+      Code expires in: <span id="timer">60</span>s
+    </div>
+  </div>
+
+  <script>
+    // 1. Countdown Logic
+    let timeLeft = 60;
+    const timerSpan = document.getElementById('timer');
+    const verifyBtn = document.getElementById('verifyBtn');
+
+    const countdownInterval = setInterval(() => {
+      timeLeft--;
+      timerSpan.textContent = timeLeft;
+
+      if (timeLeft <= 0) {
+        clearInterval(countdownInterval);
+        timerSpan.textContent = "0";
+        verifyBtn.disabled = true;
+        verifyBtn.innerText = "Code Expired";
+      }
+    }, 1000);
+
+    // 2. OTP Input Logic
+    const inputs = document.querySelectorAll('.otp-input');
+    const combinedInput = document.getElementById('combinedOtp');
+
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+        updateCombined();
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+    });
+
+    function updateCombined() {
+      let otp = "";
+      inputs.forEach(i => otp += i.value);
+      combinedInput.value = otp;
+    }
+
+    // 3. Loading state on submit
+    document.getElementById('otpForm').onsubmit = function() {
+      verifyBtn.innerText = "Verifying...";
+      verifyBtn.disabled = true;
+    };
+  </script>
+</body>
+</html>
