@@ -41,34 +41,53 @@
       border: 2px solid #ccc;
       border-radius: 8px;
       outline: none;
-      box-sizing: border-box; /* Ensures padding doesn't break size */
+      box-sizing: border-box; 
     }
     .otp-input:focus { border-color: #4b6cb7; }
     
-    button {
+    button, .btn-link {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: none;
       border-radius: 8px;
       background: #4b6cb7;
       color: white;
       font-size: 16px;
       cursor: pointer;
-      box-sizing: border-box; /* Matches input width exactly */
+      box-sizing: border-box; 
+      display: block;
+      text-decoration: none;
+      margin-bottom: 10px;
     }
     button:hover { background: #3551a1; }
     button:disabled { background: #8ba2d4; cursor: not-allowed; }
 
-    .error { color: red; margin-bottom: 8px; font-size: 14px; }
+    /* Resend Button - Hidden initially */
+    #resendBtn {
+      background: #2ecc71;
+      display: none; 
+    }
+    #resendBtn:hover { background: #27ae60; }
 
-    /* Red Countdown Timer Style */
+    /* Back to Login Style */
+    .btn-back {
+      background: #f1f1f1;
+      color: #333;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .btn-back:hover { background: #e0e0e0; }
+
+    .error { color: red; margin-bottom: 8px; font-size: 14px; }
+    .success { color: green; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
+
     #timer-container {
       margin-top: 15px;
       font-size: 14px;
       color: #666;
     }
     #timer {
-      color: #ff0000; /* Red color as requested */
+      color: #ff0000; 
       font-weight: bold;
     }
   </style>
@@ -94,16 +113,24 @@
       <button type="submit" id="verifyBtn">Verify Code</button>
     </form>
 
+    <form action="/resend-otp" method="POST" id="resendForm">
+        <input type="hidden" name="email" value="<%= email %>">
+        <button type="submit" id="resendBtn">Resend OTP</button>
+    </form>
+
     <div id="timer-container">
       Code expires in: <span id="timer">60</span>s
     </div>
+
+    <a href="/login" class="btn-link btn-back">Back to Login</a>
   </div>
 
   <script>
-    // 1. Countdown Logic
     let timeLeft = 60;
     const timerSpan = document.getElementById('timer');
     const verifyBtn = document.getElementById('verifyBtn');
+    const resendBtn = document.getElementById('resendBtn');
+    const timerContainer = document.getElementById('timer-container');
 
     const countdownInterval = setInterval(() => {
       timeLeft--;
@@ -111,13 +138,17 @@
 
       if (timeLeft <= 0) {
         clearInterval(countdownInterval);
-        timerSpan.textContent = "0";
-        verifyBtn.disabled = true;
-        verifyBtn.innerText = "Code Expired";
+        
+        // Hide Verify, Show Resend
+        verifyBtn.style.display = "none";
+        resendBtn.style.display = "block";
+        
+        // Update text
+        timerContainer.innerHTML = '<span style="color:red; font-weight:bold;">OTP Expired. Please resend.</span>';
       }
     }, 1000);
 
-    // 2. OTP Input Logic
+    // Auto-focus and combined OTP logic
     const inputs = document.querySelectorAll('.otp-input');
     const combinedInput = document.getElementById('combinedOtp');
 
@@ -142,7 +173,7 @@
       combinedInput.value = otp;
     }
 
-    // 3. Loading state on submit
+    // Submit state
     document.getElementById('otpForm').onsubmit = function() {
       verifyBtn.innerText = "Verifying...";
       verifyBtn.disabled = true;

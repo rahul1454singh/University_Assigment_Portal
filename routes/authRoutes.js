@@ -29,7 +29,7 @@ function redirectByRole(role) {
 }
 
 /* =====================================================
-    🔐 Mail transporter (FIXED FOR PORT 587)
+    🔐 Mail transporter
    ===================================================== */
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
@@ -110,20 +110,13 @@ router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
     
-    let account = await UserData.findOne({ email });
-    if (!account) {
-      account = await Admin.findOne({ email });
-    }
+    let account = await UserData.findOne({ email }) || await Admin.findOne({ email });
 
     if (!account) {
       return res.render("forgot-password", {
         error: "No account found with this email.",
         success: null
       });
-    }
-
-    if (account.role) {
-      account.role = account.role.toLowerCase();
     }
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
@@ -134,26 +127,23 @@ router.post("/forgot-password", async (req, res) => {
     await account.save();
 
     await transporter.sendMail({
-      from: process.env.FROM_EMAIL,
+      from: process.env.FROM_EMAIL || "no-reply@university.com",
       to: account.email,
       subject: "Your Password Reset OTP",
       html: `
         <div style="font-family: Arial, sans-serif; text-align: center;">
           <h2>Password Reset Request</h2>
-          <p>Use the following 4-digit OTP to reset your password. This code is valid for <b>1 minute</b>.</p>
+          <p>Use the following 4-digit OTP to reset your password. Valid for 1 minute.</p>
           <h1 style="color: #4b6cb7; letter-spacing: 5px;">${otp}</h1>
         </div>
       `
     });
 
-    return res.render("verify-otp", { email, error: null });
+    return res.render("verify-otp", { email, error: null, success: "OTP sent successfully!" });
 
   } catch (err) {
-    console.error("DEBUG - Validation Error:", err);
-    return res.render("forgot-password", {
-      error: "Something went wrong. Please try again.",
-      success: null
-    });
+    console.error(err);
+    return res.render("forgot-password", { error: "Something went wrong.", success: null });
   }
 });
 
@@ -165,59 +155,42 @@ router.post("/verify-otp", async (req, res) => {
       email,
       resetPasswordToken: otp,
       resetPasswordExpires: { $gt: Date.now() }
+    }) || await Admin.findOne({
+      email,
+      resetPasswordToken: otp,
+      resetPasswordExpires: { $gt: Date.now() }
     });
-
-    if (!account) {
-      account = await Admin.findOne({
-        email,
-        resetPasswordToken: otp,
-        resetPasswordExpires: { $gt: Date.now() }
-      });
-    }
 
     if (!account) {
       return res.render("verify-otp", { 
         email, 
-        error: "Invalid or expired OTP. Please request a new one." 
+        error: "Invalid or expired OTP.",
+        success: null 
       });
     }
 
-    return res.render("reset-password", {
-      error: null,
-      success: null,
-      email: email 
-    });
+    return res.render("reset-password", { error: null, success: null, email: email });
   } catch (err) {
-    console.error(err);
     res.redirect("/forgot-password");
   }
 });
 
+// ✅ RESET PASSWORD (RELYING ON MODEL HOOK)
 router.post("/reset-password", async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    let account = await UserData.findOne({ email });
-    if (!account) {
-      account = await Admin.findOne({ email });
-    }
+    let account = await UserData.findOne({ email }) || await Admin.findOne({ email });
 
     if (!account) {
-      return res.render("reset-password", {
-        error: "Session expired. Please start again.",
-        success: null,
-        email: null
-      });
+      return res.render("reset-password", { error: "Session expired.", success: null, email: null });
     }
 
-    if (account.role) {
-      account.role = account.role.toLowerCase();
-    }
-
-    // FIX: Just assign plain password. Model's pre-save handles hashing.
+    // Set plain password. The model's .pre("save") hashes this.
     account.password = password; 
     account.resetPasswordToken = undefined;
     account.resetPasswordExpires = undefined;
+    
     await account.save();
 
     return res.render("reset-password", {
@@ -227,11 +200,44 @@ router.post("/reset-password", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.render("reset-password", {
-      error: "Something went wrong.",
-      success: null,
-      email: req.body.email
+    return res.render("reset-password", { error: "Error resetting password.", success: null, email: req.body.email });
+  }
+});
+
+// 🔄 RESEND OTP
+router.post("/resend-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
+    let account = await UserData.findOne({ email }) || await Admin.findOne({ email });
+
+    if (!account) return res.redirect("/forgot-password");
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    account.resetPasswordToken = otp; 
+    account.resetPasswordExpires = Date.now() + 60000; 
+    await account.save();
+
+    await transporter.sendMail({
+      from: process.env.FROM_EMAIL || "no-reply@university.com",
+      to: account.email,
+      subject: "Your NEW Password Reset OTP",
+      html: `
+        <div style="font-family: Arial, sans-serif; text-align: center;">
+          <h2>New OTP Requested</h2>
+          <p>Your new verification code is below. Valid for 1 minute.</p>
+          <h1 style="color: #2ecc71; letter-spacing: 5px;">${otp}</h1>
+        </div>
+      `
     });
+
+    return res.render("verify-otp", { 
+        email, 
+        error: null, 
+        success: "A new OTP has been sent to your email." 
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect("/forgot-password");
   }
 });
 
