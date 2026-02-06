@@ -57,7 +57,6 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
       ? password
       : Math.random().toString(36).slice(-8);
 
-    // FIX: Pass plainPassword. UserData model hashes it automatically.
     const newUser = await UserData.create({
       name,
       email,
@@ -71,7 +70,8 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
       ? "You can upload assignments, view submission status, and track approval or rejection from professors."
       : "You can review student assignments, approve or reject submissions, and monitor overall progress.";
 
-    const loginUrl = `${process.env.APP_URL}/login`;
+    // ✅ FIXED LOGIN URL (ONLY CHANGE)
+    const loginUrl = `https://violent-gerrilee-university-9c3c3108.koyeb.app/login`;
 
     let messageHTML = `
       <div style="font-family: sans-serif; color: #333; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
@@ -132,7 +132,6 @@ router.post("/admin/users/update/:id", verifyAdmin, async (req, res) => {
   try {
     const { name, email, department, role, password } = req.body;
     
-    // FIX: Must use find and save() to trigger the model's pre-save hashing hook
     const user = await UserData.findById(req.params.id);
     if (!user) return res.redirect("/admin/users?error=User not found");
 
@@ -142,7 +141,7 @@ router.post("/admin/users/update/:id", verifyAdmin, async (req, res) => {
     user.role = role;
 
     if (password && password.trim() !== "") {
-      user.password = password; // Hashing happens in model
+      user.password = password;
     }
 
     await user.save();
