@@ -85,9 +85,18 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
         <p><b>Dashboard Summary:</b></p>
         <p style="color: #666;">${summaryText}</p>
         <br>
-        <a href="${loginUrl}" style="display:inline-block;padding:12px 20px;background:#4b6cb7;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;">
-          Login to Your Account
-        </a>
+
+        <p style="margin-top:20px;">
+  <b>For login click here:</b>
+  <br>
+  <a href="https://violent-gerrilee-univeristy-9c3c3108.koyeb.app/login"
+     style="color:#4b6cb7; font-weight:600; text-decoration:underline;">
+    https://violent-gerrilee-univeristy-9c3c3108.koyeb.app/login
+  </a>
+</p>
+
+
+        
       </div>
     `;
 
