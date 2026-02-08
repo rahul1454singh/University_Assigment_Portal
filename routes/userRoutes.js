@@ -66,12 +66,9 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
       role
     });
 
-    let summaryText = role === "student" 
+    let summaryText = role === "student"
       ? "You can upload assignments, view submission status, and track approval or rejection from professors."
       : "You can review student assignments, approve or reject submissions, and monitor overall progress.";
-
-    // ✅ FIXED LOGIN URL (ONLY CHANGE)
-    const loginUrl = `https://violent-gerrilee-university-9c3c3108.koyeb.app/login`;
 
     let messageHTML = `
       <div style="font-family: sans-serif; color: #333; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
@@ -84,19 +81,14 @@ router.post("/admin/users/create", verifyAdmin, async (req, res) => {
         </div>
         <p><b>Dashboard Summary:</b></p>
         <p style="color: #666;">${summaryText}</p>
-        <br>
 
         <p style="margin-top:20px;">
-  <b>For login click here:</b>
-  <br>
-  <a href="https://violent-gerrilee-univeristy-9c3c3108.koyeb.app/login"
-     style="color:#4b6cb7; font-weight:600; text-decoration:underline;">
-    https://violent-gerrilee-univeristy-9c3c3108.koyeb.app/login
-  </a>
-</p>
-
-
-        
+          <b>For login click here:</b><br>
+          <a href="https://violent-gerrilee-university-9c3c3108.koyeb.app/login"
+             style="color:#4b6cb7; font-weight:600; text-decoration:underline;">
+            https://violent-gerrilee-university-9c3c3108.koyeb.app/login
+          </a>
+        </p>
       </div>
     `;
 
@@ -140,7 +132,7 @@ router.get("/admin/users", verifyAdmin, async (req, res) => {
 router.post("/admin/users/update/:id", verifyAdmin, async (req, res) => {
   try {
     const { name, email, department, role, password } = req.body;
-    
+
     const user = await UserData.findById(req.params.id);
     if (!user) return res.redirect("/admin/users?error=User not found");
 
